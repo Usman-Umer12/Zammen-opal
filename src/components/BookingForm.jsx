@@ -29,6 +29,23 @@ const BTN_BLACK = `${BTN} border-black bg-black text-white hover:bg-white hover:
 
 const BED_OPTIONS = ['Studio', '1 Bed', '2 Bed', '3 Bed']
 
+/* City suggestions. The customer can pick one or type any other city.
+   Add or remove cities here. */
+const CITY_SUGGESTIONS = [
+  'Lahore',
+  'Islamabad',
+  'Rawalpindi',
+  'Murree',
+  'Karachi',
+  'Faisalabad',
+  'Multan',
+  'Peshawar',
+  'Quetta',
+  'Sialkot',
+  'Gujranwala',
+  'Hyderabad',
+]
+
 function bedsFromListing(listing) {
   if (!listing) return ''
   if (listing.bedrooms === 0) return 'Studio'
@@ -48,6 +65,7 @@ export default function BookingForm({ listing, className = '', embedded = false 
   const [form, setForm] = useState({
     fullName: '',
     phone: '',
+    city: '',
     checkIn: '',
     checkOut: '',
     guests: 2,
@@ -64,6 +82,7 @@ export default function BookingForm({ listing, className = '', embedded = false 
     const e = {}
     if (form.fullName.trim().length < 2) e.fullName = 'Please enter your full name.'
     if (!/^\+?[0-9\s-]{9,16}$/.test(form.phone.trim())) e.phone = 'Enter a valid mobile number.'
+    if (form.city.trim().length < 2) e.city = 'Please enter your city.'
     if (!form.checkIn) e.checkIn = 'Choose a check-in date and time.'
     if (!form.checkOut) e.checkOut = 'Choose a check-out date and time.'
     if (form.checkIn && form.checkOut && new Date(form.checkOut) <= new Date(form.checkIn))
@@ -83,6 +102,7 @@ export default function BookingForm({ listing, className = '', embedded = false 
       '',
       `Name: ${form.fullName.trim()}`,
       `Mobile: ${form.phone.trim()}`,
+      `City: ${form.city.trim()}`,
       listing ? `Apartment: ${listing.title}` : null,
       `Apartment type: ${form.apartmentType}`,
       `Check-in: ${formatDateTime(form.checkIn)}`,
@@ -103,7 +123,7 @@ export default function BookingForm({ listing, className = '', embedded = false 
         apartment_type: form.apartmentType,
         listing_id: listing?.id ?? null,
         listing_title: listing?.title ?? null,
-        city: listing?.location?.name ?? null,
+        city: form.city.trim(),
       })
       if (error) console.error('Could not save inquiry', error)
     }
@@ -166,6 +186,9 @@ export default function BookingForm({ listing, className = '', embedded = false 
   /* Fields that need the full row in the compact (embedded) layout */
   const wide = embedded ? 'col-span-2' : ''
 
+  /* Guests takes the full row so the grid stays balanced */
+  const fullRow = embedded ? 'col-span-2' : 'sm:col-span-2'
+
   return (
     <form
       onSubmit={onSubmit}
@@ -216,6 +239,52 @@ export default function BookingForm({ listing, className = '', embedded = false 
         </div>
 
         <div className={wide}>
+          <label htmlFor="bf-city" className={LABEL}>
+            Your city
+          </label>
+          <input
+            id="bf-city"
+            type="text"
+            list="bf-city-list"
+            className={fieldClass('city')}
+            placeholder="Type or select your city"
+            value={form.city}
+            onChange={set('city')}
+            autoComplete="address-level2"
+            aria-invalid={hasErr('city')}
+          />
+          <datalist id="bf-city-list">
+            {CITY_SUGGESTIONS.map((c) => (
+              <option key={c} value={c} />
+            ))}
+          </datalist>
+          {err('city')}
+        </div>
+
+        <div className={wide}>
+          <label htmlFor="bf-type" className={LABEL}>
+            Apartment type
+          </label>
+          <div className="relative">
+            <select
+              id="bf-type"
+              className={`${FIELD} ${FIELD_OK} appearance-none pr-10`}
+              value={form.apartmentType}
+              onChange={set('apartmentType')}
+            >
+              {BED_OPTIONS.map((o) => (
+                <option key={o}>{o}</option>
+              ))}
+            </select>
+            <ChevronDown
+              size={16}
+              strokeWidth={1.6}
+              className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-neutral-500"
+            />
+          </div>
+        </div>
+
+        <div className={wide}>
           <label htmlFor="bf-in" className={LABEL}>
             Check-in date &amp; time
           </label>
@@ -247,7 +316,7 @@ export default function BookingForm({ listing, className = '', embedded = false 
           {err('checkOut')}
         </div>
 
-        <div>
+        <div className={fullRow}>
           <label htmlFor="bf-guests" className={LABEL}>
             Guests
           </label>
@@ -262,29 +331,6 @@ export default function BookingForm({ listing, className = '', embedded = false 
             aria-invalid={hasErr('guests')}
           />
           {err('guests')}
-        </div>
-
-        <div>
-          <label htmlFor="bf-type" className={LABEL}>
-            Apartment type
-          </label>
-          <div className="relative">
-            <select
-              id="bf-type"
-              className={`${FIELD} ${FIELD_OK} appearance-none pr-10`}
-              value={form.apartmentType}
-              onChange={set('apartmentType')}
-            >
-              {BED_OPTIONS.map((o) => (
-                <option key={o}>{o}</option>
-              ))}
-            </select>
-            <ChevronDown
-              size={16}
-              strokeWidth={1.6}
-              className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-neutral-500"
-            />
-          </div>
         </div>
       </div>
 

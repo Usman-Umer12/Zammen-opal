@@ -1,19 +1,19 @@
 import { Link } from 'react-router-dom'
 
-// Name wordmark (no icon) with the partner name "Glory Stays" underneath.
+// Name wordmark (no icon) with the building name "Zameen Opal" underneath.
 export default function Logo({ light = false }) {
   return (
     <Link
       to="/"
       className="inline-flex flex-col leading-none"
-      aria-label="Zameen Opal with Glory Stays, home"
+      aria-label="Glory Stays with Zameen Opal, home"
     >
       <span
         className={`font-display text-[22px] font-semibold uppercase tracking-[0.22em] transition-colors duration-500 sm:text-[26px] ${
           light ? 'text-white' : 'text-pine-950'
         }`}
       >
-        Zameen Opal
+        Glory Stays
       </span>
 
       <span className="mt-2 flex items-center gap-2.5">
@@ -28,7 +28,7 @@ export default function Logo({ light = false }) {
             light ? 'text-white/80' : 'text-pine-950/70'
           }`}
         >
-          Glory Stays
+          Zameen Opal
         </span>
       </span>
     </Link>

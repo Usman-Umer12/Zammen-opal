@@ -2,17 +2,11 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
   ArrowRight,
-  BadgeCheck,
-  BedDouble,
-  CalendarCheck,
   Clapperboard,
   ConciergeBell,
   Dumbbell,
   Flower2,
-  Headset,
-  MessageCircle,
   ShieldCheck,
-  Wallet,
   Waves,
 } from 'lucide-react'
 import Seo from '../components/Seo'
@@ -22,24 +16,11 @@ import ListingCard, { ListingGrid } from '../components/ListingCard'
 import { useCatalog } from '../hooks/useCatalog'
 import { SITE } from '../lib/config'
 
-/* ───────── LOCAL IMAGES (src/assets/p1.webp to p14.webp) ───────── */
+/* ───────── LOCAL IMAGES (src/assets) ───────── */
 import p1 from '../assets/p1.webp'
 import p2 from '../assets/p2.webp'
 import p3 from '../assets/p3.webp'
 import p4 from '../assets/p4.webp'
-import p5 from '../assets/p5.webp'
-import p6 from '../assets/p6.webp'
-import p7 from '../assets/p7.webp'
-import p8 from '../assets/p8.webp'
-import p9 from '../assets/p9.webp'
-import p10 from '../assets/p10.webp'
-import p11 from '../assets/p11.webp'
-import p12 from '../assets/p12.webp'
-import p13 from '../assets/p13.webp'
-import p14 from '../assets/p14.webp'
-
-const GALLERY_ROW_1 = [p1, p2, p3, p4, p5, p6, p7]
-const GALLERY_ROW_2 = [p8, p9, p10, p11, p12, p13, p14]
 
 /* Welcome image */
 const WELCOME_IMAGE = p1
@@ -57,47 +38,6 @@ const FACILITIES = [
   { icon: Dumbbell, title: 'Fitness Gym', text: 'Keep your routine going while you travel.' },
   { icon: Clapperboard, title: 'Mini Cinema', text: 'A private screening room for relaxed evenings.' },
   { icon: ShieldCheck, title: 'Privacy & Comfort', text: 'The privacy of a fully furnished apartment.' },
-]
-
-const WHY_US = [
-  {
-    icon: BadgeCheck,
-    title: 'Fully furnished',
-    text: 'Arrive with your bags and nothing else. Every apartment is ready for you.',
-  },
-  {
-    icon: ShieldCheck,
-    title: 'The privacy of home',
-    text: 'Your own space, without the crowd and noise of a busy hotel.',
-  },
-  {
-    icon: Wallet,
-    title: 'Clear nightly rates',
-    text: 'Prices are shown upfront so you can plan your stay with confidence.',
-  },
-  {
-    icon: Headset,
-    title: 'Direct support',
-    text: 'Message our team on WhatsApp and get a direct, personal reply.',
-  },
-]
-
-const STEPS = [
-  { icon: BedDouble, title: 'Choose your apartment', text: 'Pick a city and browse furnished stays that suit your group.' },
-  { icon: CalendarCheck, title: 'Send your inquiry', text: 'Share your dates and guests through a short booking form.' },
-  { icon: MessageCircle, title: 'Confirm on WhatsApp', text: 'Our team replies directly with availability and rates.' },
-]
-
-const MARQUEE_ITEMS = [
-  'Furnished Apartments',
-  'Lahore',
-  'Murree',
-  'Islamabad',
-  'Swimming Pool',
-  'Fitness Gym',
-  'Mini Cinema',
-  'Rooftop Garden',
-  'Direct WhatsApp Booking',
 ]
 
 /* Hero slideshow images (Unsplash). To use your own, replace with
@@ -156,40 +96,6 @@ function SectionHead({ eyebrow, title, description, dark = false, center = false
   )
 }
 
-/* Infinite image strip (photo marquee) */
-function ImageMarquee({ images, reverse = false, seconds = 60 }) {
-  const loop = [...images, ...images]
-
-  return (
-    <div className="zo-gallery zo-fade-x overflow-hidden">
-      <div
-        className={`zo-gallery-track flex w-max ${reverse ? 'zo-reverse' : ''}`}
-        style={{ animationDuration: `${seconds}s` }}
-      >
-        {loop.map((src, i) => {
-          const duplicate = i >= images.length
-
-          return (
-            <div
-              key={`${i}-${src}`}
-              aria-hidden={duplicate ? 'true' : undefined}
-              className="mr-3 h-44 w-64 shrink-0 overflow-hidden bg-neutral-200 sm:mr-4 sm:h-52 sm:w-72 lg:h-60 lg:w-80"
-            >
-              <img
-                src={src}
-                alt={duplicate ? '' : `Zameen Opal apartment photo ${i + 1}`}
-                loading="lazy"
-                decoding="async"
-                className="h-full w-full object-cover transition duration-700 hover:scale-105"
-              />
-            </div>
-          )
-        })}
-      </div>
-    </div>
-  )
-}
-
 /* ───────── PAGE ───────── */
 
 export default function Home() {
@@ -207,37 +113,13 @@ export default function Home() {
 
   return (
     <div className="zo-page">
-      {/* Fonts + marquee keyframes.
-          Tip: for best speed, move the @import into index.html as <link> tags. */}
+      {/* Fonts. Tip: for best speed, move the @import into index.html as <link> tags. */}
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap');
 
         .zo-page { font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif; -webkit-font-smoothing: antialiased; }
         .zo-sans { font-family: 'Inter', ui-sans-serif, system-ui, sans-serif; }
         .zo-heading { font-family: 'Playfair Display', Georgia, 'Times New Roman', serif; }
-
-        @keyframes zo-marquee {
-          from { transform: translateX(0); }
-          to { transform: translateX(-50%); }
-        }
-
-        /* Text marquee */
-        .zo-marquee-track { animation: zo-marquee 40s linear infinite; }
-        .zo-marquee:hover .zo-marquee-track { animation-play-state: paused; }
-
-        /* Photo marquee */
-        .zo-gallery-track { animation: zo-marquee 60s linear infinite; }
-        .zo-gallery-track.zo-reverse { animation-direction: reverse; }
-        .zo-gallery:hover .zo-gallery-track { animation-play-state: paused; }
-        .zo-fade-x {
-          -webkit-mask-image: linear-gradient(to right, transparent 0, #000 6%, #000 94%, transparent 100%);
-          mask-image: linear-gradient(to right, transparent 0, #000 6%, #000 94%, transparent 100%);
-        }
-
-        @media (prefers-reduced-motion: reduce) {
-          .zo-marquee-track,
-          .zo-gallery-track { animation: none; }
-        }
       `}</style>
 
       <Seo
@@ -272,7 +154,7 @@ export default function Home() {
           ))}
         </div>
 
-        {/* Dark overlay (50%) so the hero text is easy to read */}
+        {/* Dark overlay so the hero text is easy to read */}
         <div aria-hidden="true" className={`absolute inset-0 ${HERO_OVERLAY}`} />
 
         <div className={`${FULL} relative z-10 flex h-full flex-col justify-center pb-24 pt-28 sm:pt-32`}>
@@ -346,24 +228,6 @@ export default function Home() {
           <span className="block h-8 w-px animate-scroll-hint bg-white/70" />
         </a>
       </section>
-
-      {/* ───────── TEXT MARQUEE ───────── */}
-      <div
-        aria-label="Highlights"
-        className="zo-marquee overflow-hidden border-y border-white/10 bg-black text-white"
-      >
-        <div className="zo-marquee-track flex w-max items-center whitespace-nowrap py-4">
-          {[...MARQUEE_ITEMS, ...MARQUEE_ITEMS].map((item, i) => (
-            <span
-              key={`${item}-${i}`}
-              className="flex items-center text-[11px] font-medium uppercase tracking-[0.24em] text-white/90"
-            >
-              <span className="px-6 sm:px-8">{item}</span>
-              <span aria-hidden="true" className="h-1 w-1 rotate-45 bg-white" />
-            </span>
-          ))}
-        </div>
-      </div>
 
       {/* ───────── WELCOME ───────── */}
       <section
@@ -443,7 +307,7 @@ export default function Home() {
             </Link>
           </div>
 
-          {/* 2 columns on mobile (1 2 / 3 4), 3 on large screens */}
+          {/* 2 columns on mobile, 3 on large screens */}
           <div className="mt-12 grid grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-3">
             {locations.map((loc, i) => (
               <Reveal
@@ -463,7 +327,7 @@ export default function Home() {
                       : 'aspect-[4/5]'
                   }`}
                 >
-                  <div className="absolute inset-0 grayscale transition duration-700 group-hover:grayscale-0">
+                  <div className="absolute inset-0">
                     <Photo
                       src={loc.image_url || DESTINATION_FALLBACKS[i % DESTINATION_FALLBACKS.length]}
                       alt={loc.name}
@@ -508,7 +372,6 @@ export default function Home() {
               ))}
             </ListingGrid>
 
-            {/* Centered button */}
             <Reveal className="mt-12 flex justify-center">
               <Link to="/stays" className={`${BTN_BLACK} w-full sm:w-auto`}>
                 View All Apartments
@@ -518,22 +381,6 @@ export default function Home() {
           </div>
         </section>
       )}
-
-      {/* ───────── GALLERY (photo marquee) ───────── */}
-      <section className={`${SECTION} overflow-hidden bg-neutral-100`}>
-        <div className={FULL}>
-          <SectionHead
-            eyebrow="Gallery"
-            title="A glimpse of your stay"
-            description="Bright, comfortable and fully furnished spaces."
-          />
-        </div>
-
-        <div className="mt-12 space-y-3 sm:space-y-4">
-          <ImageMarquee images={GALLERY_ROW_1} seconds={60} />
-          <ImageMarquee images={GALLERY_ROW_2} seconds={70} reverse />
-        </div>
-      </section>
 
       {/* ───────── FACILITIES ───────── */}
       <section className={`${SECTION} bg-black text-white`}>
@@ -545,7 +392,7 @@ export default function Home() {
             description="Elegant architecture and thoughtful facilities, all within the development."
           />
 
-          {/* 2 columns on mobile (1 2 / 3 4 / 5 6), 3 on large screens */}
+          {/* 2 columns on mobile, 3 on large screens */}
           <div className="mt-12 grid grid-cols-2 border-l border-t border-white/15 lg:grid-cols-3">
             {FACILITIES.map(({ icon: Icon, title, text }, i) => (
               <Reveal
@@ -566,91 +413,11 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ───────── WHY STAY WITH US ───────── */}
-      <section className={`${FULL} ${SECTION} grid gap-12 bg-white lg:grid-cols-[1fr_1.2fr] lg:gap-20`}>
-        <div className="lg:sticky lg:top-28 lg:self-start">
-          <SectionHead
-            eyebrow="Why stay with us"
-            title="Everything you need for a relaxed stay"
-            description="Simple booking, honest rates and the comfort of a fully furnished apartment."
-          />
-          <Reveal className="mt-8">
-            <Link to="/book" className={`${BTN_BLACK} w-full sm:w-auto`}>
-              Book Your Stay <ArrowRight size={14} />
-            </Link>
-          </Reveal>
-        </div>
-
-        {/* 2 x 2 grid on every screen size */}
-        <ul className="grid grid-cols-2 gap-3 sm:gap-5">
-          {WHY_US.map(({ icon: Icon, title, text }, i) => (
-            <Reveal
-              as="li"
-              key={title}
-              delay={i * 100}
-              className="flex h-full flex-col border border-neutral-300 p-4 transition duration-500 hover:border-black sm:p-7"
-            >
-              <div className="flex items-center justify-between">
-                <span className="zo-heading text-2xl text-neutral-400 sm:text-3xl">0{i + 1}</span>
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center border border-neutral-300 text-black sm:h-12 sm:w-12">
-                  <Icon size={18} strokeWidth={1.3} />
-                </span>
-              </div>
-
-              <h3 className="zo-heading mt-5 block text-base font-medium leading-snug text-black sm:mt-8 sm:text-2xl">
-                {title}
-              </h3>
-              <p className="mt-2 block text-[13px] font-normal leading-6 text-neutral-600 sm:mt-3 sm:text-[15px] sm:leading-7">
-                {text}
-              </p>
-            </Reveal>
-          ))}
-        </ul>
-      </section>
-
-      {/* ───────── HOW IT WORKS ───────── */}
-      <section className={`${SECTION} bg-neutral-100`}>
-        <div className={FULL}>
-          <SectionHead
-            center
-            eyebrow="Simple booking"
-            title="Three easy steps to your stay"
-            description="From choosing an apartment to confirming on WhatsApp."
-          />
-
-          {/* 2 columns on mobile (last step centered), 3 on medium+ screens */}
-          <div className="mt-14 grid grid-cols-2 gap-x-4 gap-y-12 md:grid-cols-3 md:gap-8">
-            {STEPS.map(({ icon: Icon, title, text }, i) => (
-              <Reveal
-                key={title}
-                delay={i * 140}
-                className={`text-center ${
-                  STEPS.length % 2 === 1 && i === STEPS.length - 1
-                    ? 'col-span-2 mx-auto max-w-[60%] md:col-span-1 md:max-w-none'
-                    : ''
-                }`}
-              >
-                <div className="mx-auto flex h-14 w-14 rotate-45 items-center justify-center border border-black sm:h-16 sm:w-16">
-                  <Icon size={22} strokeWidth={1.3} className="-rotate-45 text-black" />
-                </div>
-                <p className="zo-heading mt-7 text-2xl text-neutral-400 sm:mt-8 sm:text-4xl">0{i + 1}</p>
-                <h3 className="zo-heading mt-2 block text-base font-medium leading-snug text-black sm:text-2xl">
-                  {title}
-                </h3>
-                <p className="mx-auto mt-3 block max-w-xs text-[13px] font-normal leading-6 text-neutral-600 sm:text-[15px] sm:leading-7">
-                  {text}
-                </p>
-              </Reveal>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* ───────── FINAL CTA ───────── */}
       <section className="relative overflow-hidden bg-black py-20 text-white md:py-32">
         <div
           aria-hidden="true"
-          className="absolute inset-0 bg-cover bg-center grayscale md:bg-fixed"
+          className="absolute inset-0 bg-cover bg-center md:bg-fixed"
           style={{ backgroundImage: CTA_BG }}
         />
         <div aria-hidden="true" className="absolute inset-0 bg-black/75" />

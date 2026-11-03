@@ -14,6 +14,18 @@ const WHATSAPP_URL = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent
   'Hello, I would like to know more about your apartments.'
 )}`
 
+/* Building name shown in the top bar and the mobile menu */
+const BUILDING_NAME = 'Glory Stay'
+
+/* Rename nav labels here (key = original label in lowercase) */
+const LABEL_OVERRIDES = {
+  locations: 'Buildings',
+  location: 'Buildings',
+}
+
+const getLabel = (label) =>
+  LABEL_OVERRIDES[String(label).trim().toLowerCase()] ?? label
+
 /* Fonts (loaded by Home.jsx @import, or add the <link> tags to index.html) */
 const FONT_SANS = "font-['Inter',ui-sans-serif,system-ui,sans-serif]"
 const FONT_HEADING = "font-['Playfair_Display',Georgia,'Times_New_Roman',serif]"
@@ -111,7 +123,7 @@ export default function Navbar() {
           <div
             className={`${FULL} flex h-10 items-center justify-between text-[10px] font-medium uppercase tracking-[0.2em] text-white/80`}
           >
-            <span>Lahore · Murree · Islamabad</span>
+            <span>{BUILDING_NAME}</span>
 
             <div className="flex items-center gap-6">
               <a
@@ -162,7 +174,7 @@ export default function Navbar() {
                 end={link.end}
                 className={linkClass}
               >
-                {link.label}
+                {getLabel(link.label)}
               </NavLink>
             ))}
           </nav>
@@ -250,7 +262,7 @@ export default function Navbar() {
                 0{index + 1}
               </span>
 
-              {link.label}
+              {getLabel(link.label)}
             </NavLink>
           ))}
         </nav>
@@ -285,7 +297,7 @@ export default function Navbar() {
             <a href={`tel:+${WHATSAPP_NUMBER}`} tabIndex={open ? 0 : -1}>
               {PHONE_DISPLAY}
             </a>
-            <span>Lahore · Murree · Islamabad</span>
+            <span>{BUILDING_NAME}</span>
           </div>
         </div>
       </div>
