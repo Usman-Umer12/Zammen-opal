@@ -236,9 +236,9 @@ export default function Home() {
       >
         <div>
           <SectionHead
-            eyebrow="Welcome to Zameen Opal"
+            eyebrow="Welcome to Glory Stays"
             title="Where comfort meets"
-            description="Zameen Opal offers a welcoming setting for travellers seeking comfortable short-term stays."
+            description="Glory Stays offers a welcoming setting for travellers seeking comfortable short-term stays."
           />
           <Reveal>
             <span className="zo-heading block text-3xl font-normal italic leading-[1.15] text-black sm:text-4xl lg:text-5xl">
@@ -387,7 +387,7 @@ export default function Home() {
         <div className={FULL}>
           <SectionHead
             dark
-            eyebrow="Zameen Opal, Lahore"
+            eyebrow="Glory Stays, Lahore"
             title="Modern living with lifestyle convenience"
             description="Elegant architecture and thoughtful facilities, all within the development."
           />
