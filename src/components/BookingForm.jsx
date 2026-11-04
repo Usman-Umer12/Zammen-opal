@@ -22,29 +22,22 @@ const FIELD =
   'block w-full rounded-none border bg-white px-4 py-3 text-sm text-black placeholder:text-neutral-400 transition duration-200 focus:outline-none focus:ring-0'
 const FIELD_OK = 'border-neutral-300 hover:border-neutral-500 focus:border-black'
 const FIELD_ERR = 'border-red-600 focus:border-red-600'
+const FIELD_DISABLED = 'disabled:cursor-not-allowed disabled:bg-neutral-100 disabled:text-neutral-400'
 
 const BTN =
   'inline-flex items-center justify-center gap-2 border px-6 py-3.5 text-[11px] font-semibold uppercase tracking-[0.18em] transition duration-300'
 const BTN_BLACK = `${BTN} border-black bg-black text-white hover:bg-white hover:text-black`
 
-const BED_OPTIONS = ['Studio', '1 Bed', '2 Bed', '3 Bed']
+/* ───────── CITIES & AVAILABLE APARTMENT TYPES ─────────
+   Single source of truth. Each city lists the apartment types that can be
+   booked there. To change availability later, edit only this object. */
+const CITY_APARTMENTS = {
+  Lahore: ['1 Bed', '2 Bed', '3 Bed'],
+  Murree: ['2 Bed'],
+  Islamabad: ['1 Bed'],
+}
 
-/* City suggestions. The customer can pick one or type any other city.
-   Add or remove cities here. */
-const CITY_SUGGESTIONS = [
-  'Lahore',
-  'Islamabad',
-  'Rawalpindi',
-  'Murree',
-  'Karachi',
-  'Faisalabad',
-  'Multan',
-  'Peshawar',
-  'Quetta',
-  'Sialkot',
-  'Gujranwala',
-  'Hyderabad',
-]
+const CITY_OPTIONS = Object.keys(CITY_APARTMENTS)
 
 function bedsFromListing(listing) {
   if (!listing) return ''
@@ -69,20 +62,44 @@ export default function BookingForm({ listing, className = '', embedded = false 
     checkIn: '',
     checkOut: '',
     guests: 2,
-    apartmentType: bedsFromListing(listing) || '1 Bed',
+    apartmentType: '',
   })
   const [errors, setErrors] = useState({})
   const [status, setStatus] = useState('idle') // idle | sending | done
   const [waUrl, setWaUrl] = useState('')
   const minDate = useMemo(nowLocalInput, [])
 
+  // Apartment types available for the currently selected city
+  const typeOptions = CITY_APARTMENTS[form.city] || []
+
   const set = (key) => (e) => setForm((f) => ({ ...f, [key]: e.target.value }))
+
+  /* When the city changes, the apartment type is reset to something valid:
+     1. keep the current type if the new city offers it,
+     2. otherwise use the type of the listing being viewed, if offered,
+     3. otherwise fall back to the first type the city offers. */
+  function onCityChange(e) {
+    const city = e.target.value
+    const options = CITY_APARTMENTS[city] || []
+    const preferred = bedsFromListing(listing)
+
+    setForm((f) => {
+      let apartmentType = ''
+      if (options.includes(f.apartmentType)) apartmentType = f.apartmentType
+      else if (options.includes(preferred)) apartmentType = preferred
+      else if (options.length > 0) apartmentType = options[0]
+      return { ...f, city, apartmentType }
+    })
+    setErrors((prev) => ({ ...prev, city: undefined, apartmentType: undefined }))
+  }
 
   function validate() {
     const e = {}
     if (form.fullName.trim().length < 2) e.fullName = 'Please enter your full name.'
     if (!/^\+?[0-9\s-]{9,16}$/.test(form.phone.trim())) e.phone = 'Enter a valid mobile number.'
-    if (form.city.trim().length < 2) e.city = 'Please enter your city.'
+    if (!CITY_OPTIONS.includes(form.city)) e.city = 'Please select a city.'
+    if (!typeOptions.includes(form.apartmentType))
+      e.apartmentType = 'Please select an apartment type.'
     if (!form.checkIn) e.checkIn = 'Choose a check-in date and time.'
     if (!form.checkOut) e.checkOut = 'Choose a check-out date and time.'
     if (form.checkIn && form.checkOut && new Date(form.checkOut) <= new Date(form.checkIn))
@@ -102,7 +119,7 @@ export default function BookingForm({ listing, className = '', embedded = false 
       '',
       `Name: ${form.fullName.trim()}`,
       `Mobile: ${form.phone.trim()}`,
-      `City: ${form.city.trim()}`,
+      `City: ${form.city}`,
       listing ? `Apartment: ${listing.title}` : null,
       `Apartment type: ${form.apartmentType}`,
       `Check-in: ${formatDateTime(form.checkIn)}`,
@@ -123,7 +140,7 @@ export default function BookingForm({ listing, className = '', embedded = false 
         apartment_type: form.apartmentType,
         listing_id: listing?.id ?? null,
         listing_title: listing?.title ?? null,
-        city: form.city.trim(),
+        city: form.city,
       })
       if (error) console.error('Could not save inquiry', error)
     }
@@ -189,6 +206,13 @@ export default function BookingForm({ listing, className = '', embedded = false 
   /* Guests takes the full row so the grid stays balanced */
   const fullRow = embedded ? 'col-span-2' : 'sm:col-span-2'
 
+  /* Small hint under the apartment type field */
+  const typeHint = !form.city
+    ? 'Select a city first.'
+    : typeOptions.length === 1
+      ? `Only ${typeOptions[0]} is available in ${form.city}.`
+      : null
+
   return (
     <form
       onSubmit={onSubmit}
@@ -238,42 +262,26 @@ export default function BookingForm({ listing, className = '', embedded = false 
           {err('phone')}
         </div>
 
+        {/* City: fixed list (Lahore, Murree, Islamabad) */}
         <div className={wide}>
           <label htmlFor="bf-city" className={LABEL}>
             Your city
           </label>
-          <input
-            id="bf-city"
-            type="text"
-            list="bf-city-list"
-            className={fieldClass('city')}
-            placeholder="Type or select your city"
-            value={form.city}
-            onChange={set('city')}
-            autoComplete="address-level2"
-            aria-invalid={hasErr('city')}
-          />
-          <datalist id="bf-city-list">
-            {CITY_SUGGESTIONS.map((c) => (
-              <option key={c} value={c} />
-            ))}
-          </datalist>
-          {err('city')}
-        </div>
-
-        <div className={wide}>
-          <label htmlFor="bf-type" className={LABEL}>
-            Apartment type
-          </label>
           <div className="relative">
             <select
-              id="bf-type"
-              className={`${FIELD} ${FIELD_OK} appearance-none pr-10`}
-              value={form.apartmentType}
-              onChange={set('apartmentType')}
+              id="bf-city"
+              className={`${fieldClass('city')} appearance-none pr-10`}
+              value={form.city}
+              onChange={onCityChange}
+              aria-invalid={hasErr('city')}
             >
-              {BED_OPTIONS.map((o) => (
-                <option key={o}>{o}</option>
+              <option value="" disabled>
+                Select your city
+              </option>
+              {CITY_OPTIONS.map((c) => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
               ))}
             </select>
             <ChevronDown
@@ -282,6 +290,40 @@ export default function BookingForm({ listing, className = '', embedded = false 
               className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-neutral-500"
             />
           </div>
+          {err('city')}
+        </div>
+
+        {/* Apartment type: options depend on the selected city */}
+        <div className={wide}>
+          <label htmlFor="bf-type" className={LABEL}>
+            Apartment type
+          </label>
+          <div className="relative">
+            <select
+              id="bf-type"
+              className={`${fieldClass('apartmentType')} ${FIELD_DISABLED} appearance-none pr-10`}
+              value={form.apartmentType}
+              onChange={set('apartmentType')}
+              disabled={!form.city}
+              aria-invalid={hasErr('apartmentType')}
+            >
+              {!form.city && <option value="">Select city first</option>}
+              {typeOptions.map((o) => (
+                <option key={o} value={o}>
+                  {o}
+                </option>
+              ))}
+            </select>
+            <ChevronDown
+              size={16}
+              strokeWidth={1.6}
+              className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-neutral-500"
+            />
+          </div>
+          {typeHint && !hasErr('apartmentType') && (
+            <p className="mt-1.5 text-xs text-neutral-500">{typeHint}</p>
+          )}
+          {err('apartmentType')}
         </div>
 
         <div className={wide}>
@@ -342,12 +384,7 @@ export default function BookingForm({ listing, className = '', embedded = false 
         {status === 'sending' ? 'Sending…' : 'Book Now'}
       </button>
 
-      <p className="mt-4 text-center text-xs leading-5 text-neutral-500">
-        No payment is taken online.
-      </p>
-      <p className="text-center text-xs leading-5 text-neutral-500">
-        Our team will confirm availability and rates with you.
-      </p>
+    
     </form>
   )
 }

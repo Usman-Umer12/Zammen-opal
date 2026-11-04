@@ -1,4 +1,3 @@
-
 import { lazy, Suspense, useEffect } from 'react'
 import { Outlet, Route, Routes, useLocation } from 'react-router-dom'
 
@@ -10,6 +9,7 @@ import Home from './pages/Home'
 import Stays from './pages/Stays'
 import StayDetail from './pages/StayDetail'
 import Locations from './pages/Locations'
+import LocationDetail from './pages/LocationDetail'
 import About from './pages/About'
 import Contact from './pages/Contact'
 import Book from './pages/Book'
@@ -91,7 +91,10 @@ export default function App() {
             <Route path="stays" element={<Stays />} />
             <Route path="stays/:slug" element={<StayDetail />} />
 
+            {/* All locations, then one page per city (Lahore, Islamabad, Murree) */}
             <Route path="locations" element={<Locations />} />
+            <Route path="locations/:slug" element={<LocationDetail />} />
+
             <Route path="about" element={<About />} />
             <Route path="contact" element={<Contact />} />
             <Route path="book" element={<Book />} />

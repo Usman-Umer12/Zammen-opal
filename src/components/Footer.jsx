@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { ArrowUpRight, ChevronUp, Mail, MapPin, MessageCircle, Phone } from 'lucide-react'
+import { ArrowUpRight, ChevronUp, MapPin, MessageCircle, Phone } from 'lucide-react'
 import Logo from './Logo'
 import { NAV_LINKS, SITE } from '../lib/config'
 import { useCatalog } from '../hooks/useCatalog'
@@ -10,8 +10,12 @@ import { useCatalog } from '../hooks/useCatalog'
 const WHATSAPP_NUMBER = '923282626261'
 const PHONE_DISPLAY = '+92 328 2626261'
 const EMAIL = 'info@glorystays.com'
-const ADDRESS =
-  'Plots 16 & 17, Sector A, Land Breeze Housing Society, Main Raiwind Road'
+
+// Address is split into two clean lines so it never breaks awkwardly on mobile
+const ADDRESS_LINES = [
+  'Plots 16 & 17, Sector A,',
+  'Land Breeze Housing Society, Main Raiwind Road',
+]
 const MAP_URL = 'https://maps.app.goo.gl/h5iRDHNHD5uZD59P8?g_st=ac'
 
 const WHATSAPP_URL = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
@@ -30,7 +34,7 @@ const TEXT = 'text-[14px] font-normal leading-7 text-neutral-400 sm:text-[15px]'
 const LINK =
   'inline-block text-[14px] font-normal text-neutral-400 transition duration-300 hover:translate-x-1 hover:text-white sm:text-[15px]'
 const ICON_BOX =
-  'mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center border border-white/20 text-white transition duration-300 group-hover:border-white group-hover:bg-white group-hover:text-black'
+  'flex h-10 w-10 shrink-0 items-center justify-center border border-white/20 text-white transition duration-300 group-hover:border-white group-hover:bg-white group-hover:text-black'
 
 export default function Footer() {
   const { locations } = useCatalog()
@@ -71,12 +75,12 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* Explore */}
-        <div className="col-span-1 lg:col-span-3 lg:col-start-7">
+        {/* Explore: full width on mobile, links in 2 columns */}
+        <div className="col-span-2 md:col-span-1 lg:col-span-3 lg:col-start-7">
           <h3 className={HEADING}>Explore</h3>
           <span className="mt-4 block h-px w-8 bg-white/40" />
 
-          <ul className="mt-6 space-y-3">
+          <ul className="mt-6 grid grid-cols-2 gap-x-6 gap-y-3 md:block md:space-y-3">
             {NAV_LINKS.map((l) => (
               <li key={l.to}>
                 <Link to={l.to} className={LINK}>
@@ -98,45 +102,56 @@ export default function Footer() {
           )}
         </div>
 
-        {/* Contact */}
-        <div className="col-span-1 lg:col-span-3">
+        {/* Contact: full width on mobile so details sit cleanly */}
+        <div className="col-span-2 md:col-span-1 lg:col-span-3">
           <h3 className={HEADING}>Contact</h3>
           <span className="mt-4 block h-px w-8 bg-white/40" />
 
-          <ul className="mt-6 space-y-6">
+          <ul className="mt-6 space-y-5">
             {/* Address */}
             <li>
               <a
                 href={MAP_URL}
                 target="_blank"
                 rel="noreferrer"
-                className="group flex gap-3 sm:gap-4"
+                className="group flex items-center gap-4"
               >
                 <span className={ICON_BOX}>
                   <MapPin size={16} strokeWidth={1.5} />
                 </span>
-                <span className={`${TEXT} transition group-hover:text-white`}>{ADDRESS}</span>
+                <span className="block min-w-0">
+                  <span className="block text-[10px] font-semibold uppercase tracking-[0.2em] text-neutral-500">
+                    Address
+                  </span>
+                  <span className={`${TEXT} mt-1 block leading-6 transition group-hover:text-white`}>
+                    {ADDRESS_LINES.map((line) => (
+                      <span key={line} className="block">
+                        {line}
+                      </span>
+                    ))}
+                  </span>
+                </span>
               </a>
             </li>
 
             {/* Phone: WhatsApp & UAN */}
             <li>
-              <a href={`tel:+${WHATSAPP_NUMBER}`} className="group flex gap-3 sm:gap-4">
+              <a href={`tel:+${WHATSAPP_NUMBER}`} className="group flex items-center gap-4">
                 <span className={ICON_BOX}>
                   <Phone size={16} strokeWidth={1.5} />
                 </span>
-                <span className="block">
-                  <span className="block text-[10px] font-semibold uppercase tracking-[0.2em] text-neutral-500">
+                <span className="block min-w-0">
+                  <span className="block whitespace-nowrap text-[10px] font-semibold uppercase tracking-[0.2em] text-neutral-500">
                     WhatsApp &amp; UAN
                   </span>
-                  <span className={`${TEXT} block transition group-hover:text-white`}>
+                  <span
+                    className={`${TEXT} mt-1 block whitespace-nowrap leading-6 transition group-hover:text-white`}
+                  >
                     {PHONE_DISPLAY}
                   </span>
                 </span>
               </a>
             </li>
-
-      
           </ul>
         </div>
       </div>

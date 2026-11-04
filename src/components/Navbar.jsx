@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
-import { ArrowUpRight, MessageCircle, Phone } from 'lucide-react'
+import { ArrowRight, ArrowUpRight, ChevronDown, MapPin, MessageCircle, Phone } from 'lucide-react'
 import Logo from './Logo'
-import { NAV_LINKS, SITE } from '../lib/config'
+import { CITY_ORDER, CITY_THEMES } from '../lib/cityThemes'
 
 /* ───────── CONTACT NUMBER ───────── */
 
@@ -14,31 +14,37 @@ const WHATSAPP_URL = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent
   'Hello, I would like to know more about your apartments.'
 )}`
 
-/* Building name shown in the top bar and the mobile menu */
-const BUILDING_NAME = 'Glory Stay'
+/* Name shown in the top bar */
+const BUILDING_NAME = 'Glory Stays'
 
-/* Rename nav labels here (key = original label in lowercase) */
-const LABEL_OVERRIDES = {
-  locations: 'Buildings',
-  location: 'Buildings',
-}
+/* ───────── MENU ─────────
+   Change the `to` paths here if your routes are different. */
+const NAV = [
+  { label: 'Home', to: '/', end: true },
+  { label: 'Buildings', to: '/locations', dropdown: true },
+  { label: 'Apartments', to: '/stays' },
+  { label: 'About', to: '/about' },
+  { label: 'Contact Us', to: '/contact' },
+]
 
-const getLabel = (label) =>
-  LABEL_OVERRIDES[String(label).trim().toLowerCase()] ?? label
-
-/* Fonts (loaded by Home.jsx @import, or add the <link> tags to index.html) */
 const FONT_SANS = "font-['Inter',ui-sans-serif,system-ui,sans-serif]"
 const FONT_HEADING = "font-['Playfair_Display',Georgia,'Times_New_Roman',serif]"
 
-/* Same full-width wrapper used by every section on the Home page */
+/* Same full-width wrapper used by every section */
 const FULL = 'w-full px-5 sm:px-8 lg:px-14'
 
 export default function Navbar() {
-  const [open, setOpen] = useState(false)
+  const [open, setOpen] = useState(false) // mobile menu
+  const [mobileBuildings, setMobileBuildings] = useState(false) // mobile accordion
+  const [dropdown, setDropdown] = useState(false) // desktop dropdown
   const [scrolled, setScrolled] = useState(false)
+
+  const dropdownRef = useRef(null)
+  const closeTimer = useRef(null)
 
   const { pathname } = useLocation()
   const isHome = pathname === '/'
+  const buildingsActive = pathname.startsWith('/locations')
 
   /* Scroll state */
   useEffect(() => {
@@ -50,12 +56,22 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
-  /* Close menu on route change */
+  /* Close everything on route change */
   useEffect(() => {
     setOpen(false)
+    setDropdown(false)
   }, [pathname])
 
-  /* Lock body scroll while menu is open */
+  /* Reset the mobile accordion when the menu closes */
+  useEffect(() => {
+    if (!open) {
+      const id = setTimeout(() => setMobileBuildings(false), 500)
+      return () => clearTimeout(id)
+    }
+    return undefined
+  }, [open])
+
+  /* Lock body scroll while mobile menu is open */
   useEffect(() => {
     document.body.style.overflow = open ? 'hidden' : ''
 
@@ -66,17 +82,34 @@ export default function Navbar() {
 
   /* Close on Escape */
   useEffect(() => {
-    if (!open) return undefined
+    if (!open && !dropdown) return undefined
 
     const onKey = (e) => {
-      if (e.key === 'Escape') setOpen(false)
+      if (e.key === 'Escape') {
+        setOpen(false)
+        setDropdown(false)
+      }
     }
 
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [open])
+  }, [open, dropdown])
 
-  /* Close menu if the screen grows to desktop size */
+  /* Close desktop dropdown when clicking outside it */
+  useEffect(() => {
+    if (!dropdown) return undefined
+
+    const onDown = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setDropdown(false)
+      }
+    }
+
+    document.addEventListener('mousedown', onDown)
+    return () => document.removeEventListener('mousedown', onDown)
+  }, [dropdown])
+
+  /* Close mobile menu if the screen grows to desktop size */
   useEffect(() => {
     const mq = window.matchMedia('(min-width: 1024px)')
     const onChange = (e) => {
@@ -87,18 +120,28 @@ export default function Navbar() {
     return () => mq.removeEventListener('change', onChange)
   }, [])
 
+  useEffect(() => () => clearTimeout(closeTimer.current), [])
+
   const onDark = open || (isHome && !scrolled)
   const showTopBar = isHome && !scrolled && !open
 
-  const linkClass = ({ isActive }) =>
-    `relative py-2 text-[11px] font-medium uppercase tracking-[0.18em] transition-colors duration-300 after:absolute after:-bottom-0.5 after:left-0 after:h-px after:w-full after:origin-left after:bg-current after:transition-transform after:duration-300 ${
-      onDark
-        ? 'text-white/90 hover:text-white'
-        : 'text-neutral-600 hover:text-black'
-    } ${
+  /* Hover open / delayed close, so the pointer can travel into the panel */
+  const openDropdown = () => {
+    clearTimeout(closeTimer.current)
+    setDropdown(true)
+  }
+  const closeDropdown = () => {
+    clearTimeout(closeTimer.current)
+    closeTimer.current = setTimeout(() => setDropdown(false), 140)
+  }
+
+  const linkClass = (isActive) =>
+    `relative inline-flex items-center gap-1.5 py-2 text-[11px] font-medium uppercase tracking-[0.18em] transition-colors duration-300 after:absolute after:-bottom-0.5 after:left-0 after:h-px after:w-full after:origin-left after:bg-current after:transition-transform after:duration-300 ${
       isActive
         ? `after:scale-x-100 ${onDark ? 'text-white' : 'text-black'}`
-        : 'after:scale-x-0 hover:after:scale-x-100'
+        : `after:scale-x-0 hover:after:scale-x-100 ${
+            onDark ? 'text-white/90 hover:text-white' : 'text-neutral-600 hover:text-black'
+          }`
     }`
 
   return (
@@ -108,7 +151,7 @@ export default function Navbar() {
           open
             ? 'border-b border-white/10 bg-black'
             : onDark
-              ? 'border-b border-transparent bg-gradient-to-b from-black/30 to-transparent'
+              ? 'border-b border-transparent bg-gradient-to-b from-black/40 to-transparent'
               : 'border-b border-neutral-200 bg-white/95 shadow-[0_4px_30px_rgba(0,0,0,0.06)] backdrop-blur-xl'
         }`}
       >
@@ -154,29 +197,108 @@ export default function Navbar() {
           }`}
         >
           {/* Logo */}
-          <Link
-            to="/"
-            aria-label={`${SITE.name} home`}
-            className="relative z-50 shrink-0"
-          >
-            <Logo light={onDark} />
+          <Link to="/" aria-label="Glory Stays, home" className="relative z-50 shrink-0">
+            <Logo light={onDark} link={false} />
           </Link>
 
           {/* Desktop Navigation */}
           <nav
-            className="hidden flex-1 items-center justify-center gap-6 lg:flex xl:gap-10"
+            className="hidden flex-1 items-center justify-center gap-8 lg:flex xl:gap-12"
             aria-label="Main navigation"
           >
-            {NAV_LINKS.map((link) => (
-              <NavLink
-                key={link.to}
-                to={link.to}
-                end={link.end}
-                className={linkClass}
-              >
-                {getLabel(link.label)}
-              </NavLink>
-            ))}
+            {NAV.map((item) =>
+              item.dropdown ? (
+                /* Buildings with dropdown */
+                <div
+                  key={item.to}
+                  ref={dropdownRef}
+                  className="relative"
+                  onMouseEnter={openDropdown}
+                  onMouseLeave={closeDropdown}
+                  onFocus={openDropdown}
+                  onBlur={(e) => {
+                    if (!e.currentTarget.contains(e.relatedTarget)) closeDropdown()
+                  }}
+                >
+                  <button
+                    type="button"
+                    aria-haspopup="true"
+                    aria-expanded={dropdown}
+                    onClick={() => setDropdown((v) => !v)}
+                    className={linkClass(buildingsActive || dropdown)}
+                  >
+                    {item.label}
+                    <ChevronDown
+                      size={13}
+                      strokeWidth={1.8}
+                      className={`transition-transform duration-300 ${dropdown ? 'rotate-180' : ''}`}
+                    />
+                  </button>
+
+                  {/* Dropdown panel */}
+                  <div
+                    className={`absolute left-1/2 top-full w-[340px] -translate-x-1/2 pt-4 transition duration-300 ${
+                      dropdown
+                        ? 'visible translate-y-0 opacity-100'
+                        : 'pointer-events-none invisible translate-y-2 opacity-0'
+                    }`}
+                  >
+                    <div className="border border-neutral-200 bg-white shadow-[0_24px_60px_-20px_rgba(0,0,0,0.35)]">
+                      <span className="block border-b border-neutral-200 px-6 py-4 text-[10px] font-semibold uppercase tracking-[0.24em] text-neutral-500">
+                        Choose a destination
+                      </span>
+
+                      <ul>
+                        {CITY_ORDER.map((city) => (
+                          <li key={city}>
+                            <Link
+                              to={`/locations/${city.toLowerCase()}`}
+                              tabIndex={dropdown ? 0 : -1}
+                              className="group flex items-center justify-between gap-4 border-b border-neutral-100 px-6 py-4 transition duration-300 hover:bg-neutral-50"
+                            >
+                              <div className="min-w-0">
+                                <span
+                                  className={`${FONT_HEADING} block text-lg font-medium leading-tight text-black`}
+                                >
+                                  {city}
+                                </span>
+                                <span className="mt-1.5 flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-neutral-500">
+                                  <MapPin size={11} strokeWidth={1.8} className="shrink-0" />
+                                  <span className="truncate">{CITY_THEMES[city].landmark}</span>
+                                </span>
+                              </div>
+
+                              <ArrowRight
+                                size={16}
+                                className="shrink-0 text-black transition duration-300 group-hover:translate-x-1"
+                              />
+                            </Link>
+                          </li>
+                        ))}
+                      </ul>
+
+                      <Link
+                        to="/locations"
+                        tabIndex={dropdown ? 0 : -1}
+                        className="flex items-center justify-between bg-black px-6 py-4 text-[11px] font-semibold uppercase tracking-[0.18em] text-white transition hover:bg-neutral-800"
+                      >
+                        View all buildings
+                        <ArrowRight size={14} />
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <NavLink
+                  key={item.to}
+                  to={item.to}
+                  end={item.end}
+                  className={({ isActive }) => linkClass(isActive)}
+                >
+                  {item.label}
+                </NavLink>
+              )
+            )}
           </nav>
 
           {/* Desktop CTA */}
@@ -207,9 +329,7 @@ export default function Navbar() {
             <span className="relative block h-4 w-6">
               <span
                 className={`absolute left-0 block h-[1.5px] w-full bg-current transition-all duration-500 ease-[cubic-bezier(0.76,0,0.24,1)] ${
-                  open
-                    ? 'top-1/2 -translate-y-1/2 rotate-45'
-                    : 'top-0'
+                  open ? 'top-1/2 -translate-y-1/2 rotate-45' : 'top-0'
                 }`}
               />
               <span
@@ -219,9 +339,7 @@ export default function Navbar() {
               />
               <span
                 className={`absolute left-0 block h-[1.5px] w-full bg-current transition-all duration-500 ease-[cubic-bezier(0.76,0,0.24,1)] ${
-                  open
-                    ? 'top-1/2 -translate-y-1/2 -rotate-45'
-                    : 'bottom-0'
+                  open ? 'top-1/2 -translate-y-1/2 -rotate-45' : 'bottom-0'
                 }`}
               />
             </span>
@@ -239,32 +357,106 @@ export default function Navbar() {
             : 'pointer-events-none invisible opacity-0 [clip-path:inset(0_0_100%_0)]'
         }`}
       >
-        <nav
-          className="flex flex-1 flex-col justify-center"
-          aria-label="Mobile navigation"
-        >
-          {NAV_LINKS.map((link, index) => (
-            <NavLink
-              key={link.to}
-              to={link.to}
-              end={link.end}
-              tabIndex={open ? 0 : -1}
-              style={{ transitionDelay: open ? `${250 + index * 70}ms` : '0ms' }}
-              className={({ isActive }) =>
-                `${FONT_HEADING} flex items-baseline gap-4 border-b border-white/10 py-4 text-[1.7rem] leading-tight transition-all duration-700 ease-out motion-reduce:transition-none sm:py-5 sm:text-4xl ${
-                  open ? 'translate-y-0 opacity-100' : 'translate-y-6 opacity-0'
-                } ${isActive ? 'text-white' : 'text-white/60 hover:text-white'}`
-              }
-            >
+        <nav className="my-auto flex flex-col py-4" aria-label="Mobile navigation">
+          {NAV.map((item, index) => {
+            const delay = { transitionDelay: open ? `${250 + index * 70}ms` : '0ms' }
+            const reveal = open ? 'translate-y-0 opacity-100' : 'translate-y-6 opacity-0'
+            const rowBase = `${FONT_HEADING} flex w-full items-baseline gap-4 border-b border-white/10 py-4 text-left text-[1.7rem] leading-tight transition-all duration-700 ease-out motion-reduce:transition-none sm:py-5 sm:text-4xl ${reveal}`
+            const number = (
               <span
                 className={`${FONT_SANS} w-6 shrink-0 text-[10px] uppercase tracking-[0.2em] text-white/40`}
               >
                 0{index + 1}
               </span>
+            )
 
-              {getLabel(link.label)}
-            </NavLink>
-          ))}
+            /* Buildings accordion */
+            if (item.dropdown) {
+              return (
+                <div key={item.to}>
+                  <button
+                    type="button"
+                    tabIndex={open ? 0 : -1}
+                    aria-expanded={mobileBuildings}
+                    aria-controls="mobile-buildings"
+                    onClick={() => setMobileBuildings((v) => !v)}
+                    style={delay}
+                    className={`${rowBase} ${
+                      buildingsActive || mobileBuildings ? 'text-white' : 'text-white/60'
+                    }`}
+                  >
+                    {number}
+                    <span className="flex-1">{item.label}</span>
+                    <ChevronDown
+                      size={20}
+                      strokeWidth={1.5}
+                      className={`shrink-0 self-center transition-transform duration-500 ${
+                        mobileBuildings ? 'rotate-180' : ''
+                      }`}
+                    />
+                  </button>
+
+                  <div
+                    id="mobile-buildings"
+                    className={`grid transition-[grid-template-rows] duration-500 ease-[cubic-bezier(0.76,0,0.24,1)] ${
+                      mobileBuildings ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
+                    }`}
+                  >
+                    <div className="overflow-hidden">
+                      <ul className="border-b border-white/10 bg-white/[0.04] py-2 pl-10 pr-2 sm:pl-10">
+                        {CITY_ORDER.map((city) => (
+                          <li key={city}>
+                            <Link
+                              to={`/locations/${city.toLowerCase()}`}
+                              tabIndex={open && mobileBuildings ? 0 : -1}
+                              className="flex items-center justify-between gap-3 py-3.5"
+                            >
+                              <div className="min-w-0">
+                                <span className={`${FONT_HEADING} block text-xl text-white sm:text-2xl`}>
+                                  {city}
+                                </span>
+                                <span className="mt-1 flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-white/50">
+                                  <MapPin size={11} strokeWidth={1.8} className="shrink-0" />
+                                  <span className="truncate">{CITY_THEMES[city].landmark}</span>
+                                </span>
+                              </div>
+                              <ArrowRight size={16} className="shrink-0 text-white/60" />
+                            </Link>
+                          </li>
+                        ))}
+                        <li>
+                          <Link
+                            to="/locations"
+                            tabIndex={open && mobileBuildings ? 0 : -1}
+                            className="flex items-center justify-between py-3.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/80"
+                          >
+                            View all buildings
+                            <ArrowRight size={14} />
+                          </Link>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              )
+            }
+
+            return (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                end={item.end}
+                tabIndex={open ? 0 : -1}
+                style={delay}
+                className={({ isActive }) =>
+                  `${rowBase} ${isActive ? 'text-white' : 'text-white/60 hover:text-white'}`
+                }
+              >
+                {number}
+                {item.label}
+              </NavLink>
+            )
+          })}
         </nav>
 
         {/* Mobile Contact & CTA */}
@@ -272,7 +464,7 @@ export default function Navbar() {
           className={`border-t border-white/10 pt-6 transition-all duration-700 ease-out motion-reduce:transition-none ${
             open ? 'translate-y-0 opacity-100' : 'translate-y-6 opacity-0'
           }`}
-          style={{ transitionDelay: open ? `${250 + NAV_LINKS.length * 70}ms` : '0ms' }}
+          style={{ transitionDelay: open ? `${250 + NAV.length * 70}ms` : '0ms' }}
         >
           <Link
             to="/book"

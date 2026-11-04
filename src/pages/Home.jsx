@@ -2,12 +2,14 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
   ArrowRight,
-  Clapperboard,
+  Armchair,
+  CarFront,
   ConciergeBell,
-  Dumbbell,
-  Flower2,
-  ShieldCheck,
-  Waves,
+  Headphones,
+  Snowflake,
+  Sparkles,
+  Wifi,
+  Zap,
 } from 'lucide-react'
 import Seo from '../components/Seo'
 import Photo from '../components/Photo'
@@ -31,13 +33,47 @@ const DESTINATION_FALLBACKS = [p2, p3, p4]
 
 /* ───────── DATA ───────── */
 
-const FACILITIES = [
-  { icon: ConciergeBell, title: 'Spacious Lobby', text: 'A warm, well-kept welcome the moment you arrive.' },
-  { icon: Flower2, title: 'Rooftop Garden', text: 'Open-air space to unwind above the city.' },
-  { icon: Waves, title: 'Swimming Pool', text: 'Cool off without ever leaving the building.' },
-  { icon: Dumbbell, title: 'Fitness Gym', text: 'Keep your routine going while you travel.' },
-  { icon: Clapperboard, title: 'Mini Cinema', text: 'A private screening room for relaxed evenings.' },
-  { icon: ShieldCheck, title: 'Privacy & Comfort', text: 'The privacy of a fully furnished apartment.' },
+const AMENITIES = [
+  {
+    icon: Armchair,
+    title: 'Luxurious Living',
+    text: 'High-end apartments with premium furnishings.',
+  },
+  {
+    icon: Wifi,
+    title: 'Seamless Connectivity',
+    text: 'Lightning-fast fiber optic internet.',
+  },
+  {
+    icon: Zap,
+    title: 'Uninterrupted Power',
+    text: '24/7 electricity to keep you going.',
+  },
+  {
+    icon: Snowflake,
+    title: 'Refresh & Recharge',
+    text: 'Inverter air-conditioned rooms for ultimate comfort.',
+  },
+  {
+    icon: Headphones,
+    title: 'Dedicated Service',
+    text: 'Our 24/7 team is always here to help.',
+  },
+  {
+    icon: Sparkles,
+    title: 'Impeccable Cleanliness',
+    text: 'Regular housekeeping to keep your space spotless.',
+  },
+  {
+    icon: CarFront,
+    title: 'Secure Parking',
+    text: 'Convenient basement parking for your vehicle.',
+  },
+  {
+    icon: ConciergeBell,
+    title: 'Grand Entrance',
+    text: 'Be greeted by our stunning, luxurious lobby.',
+  },
 ]
 
 /* Hero slideshow images (Unsplash). To use your own, replace with
@@ -235,18 +271,22 @@ export default function Home() {
         className={`${FULL} ${SECTION} grid items-center gap-12 bg-white lg:grid-cols-2 lg:gap-20`}
       >
         <div>
-          <SectionHead
-            eyebrow="Welcome to Glory Stays"
-            title="Where comfort meets"
-            description="Glory Stays offers a welcoming setting for travellers seeking comfortable short-term stays."
-          />
-          <Reveal>
-            <span className="zo-heading block text-3xl font-normal italic leading-[1.15] text-black sm:text-4xl lg:text-5xl">
-              the privacy of home
-            </span>
-            <p className={DESC}>
-              Whether it is a family getaway, a business trip or a relaxing break, you get a calm,
-              furnished apartment and a team that is easy to reach.
+          <Reveal className="max-w-2xl">
+            <span className={EYEBROW}>Welcome to Glory Stays</span>
+
+            {/* One continuous heading, so the title reads as a single statement */}
+            <h2 className={TITLE}>
+              Where comfort meets{' '}
+              <span className="font-normal italic">the privacy of home</span>
+            </h2>
+
+            {/* Short divider to separate the heading from the copy */}
+            <span aria-hidden="true" className="mt-8 block h-px w-14 bg-black" />
+
+            <p className={`${DESC} !mt-6`}>
+              Glory Stays offers a welcoming setting for travellers seeking comfortable
+              short-term stays. Whether it is a family getaway, a business trip or a relaxing
+              break, you get a calm, furnished apartment and a team that is easy to reach.
             </p>
 
             <Link to="/about" className={`${BTN_BLACK} mt-8`}>
@@ -382,29 +422,32 @@ export default function Home() {
         </section>
       )}
 
-      {/* ───────── FACILITIES ───────── */}
+      {/* ───────── AMENITIES ───────── */}
       <section className={`${SECTION} bg-black text-white`}>
         <div className={FULL}>
           <SectionHead
             dark
-            eyebrow="Glory Stays, Lahore"
-            title="Modern living with lifestyle convenience"
-            description="Elegant architecture and thoughtful facilities, all within the development."
+            eyebrow="During your stay"
+            title="Experience Unparalleled Luxury"
+            description="Premium comforts and dependable service, included with every stay."
           />
 
-          {/* 2 columns on mobile, 3 on large screens */}
-          <div className="mt-12 grid grid-cols-2 border-l border-t border-white/15 lg:grid-cols-3">
-            {FACILITIES.map(({ icon: Icon, title, text }, i) => (
+          {/* 2 columns on mobile, 4 on large screens (8 items = 2 clean rows) */}
+          <div className="mt-12 grid grid-cols-2 border-l border-t border-white/15 lg:grid-cols-4">
+            {AMENITIES.map(({ icon: Icon, title, text }, i) => (
               <Reveal
                 key={title}
-                delay={(i % 3) * 100}
-                className="border-b border-r border-white/15 p-5 transition duration-500 hover:bg-white/5 sm:p-10"
+                delay={(i % 4) * 100}
+                className="group border-b border-r border-white/15 p-5 transition duration-500 hover:bg-white/5 sm:p-8 lg:p-9"
               >
-                <Icon size={26} strokeWidth={1.2} className="text-white" />
-                <h3 className="zo-heading mt-5 block text-base font-medium leading-snug text-white sm:mt-6 sm:text-2xl">
+                <span className="flex h-11 w-11 items-center justify-center border border-white/20 text-white transition duration-500 group-hover:border-white group-hover:bg-white group-hover:text-black sm:h-12 sm:w-12">
+                  <Icon size={20} strokeWidth={1.4} />
+                </span>
+
+                <h3 className="zo-heading mt-5 block text-[17px] font-medium leading-snug text-white sm:mt-6 sm:text-xl">
                   {title}
                 </h3>
-                <p className="mt-2 block text-[13px] font-normal leading-6 text-neutral-400 sm:mt-3 sm:text-[15px] sm:leading-7">
+                <p className="mt-2 block text-[13px] font-normal leading-6 text-neutral-400 sm:mt-3 sm:text-[14px] sm:leading-7">
                   {text}
                 </p>
               </Reveal>

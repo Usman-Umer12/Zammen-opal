@@ -23,11 +23,33 @@ const PHONE_DISPLAY = '+92 328 2626261'
 const buildWhatsappUrl = (message) =>
   `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`
 
-const ADDRESS =
-  'Plots 16 & 17, Sector A, Land Breeze Housing Society, Main Raiwind Road'
+/* ───────── LOCATIONS ─────────
+   Add or edit a location here and it appears in the "Visit us" cards,
+   the map tabs and the form dropdown automatically. */
 
-const MAP_URL =
-  'https://maps.app.goo.gl/h5iRDHNHD5uZD59P8?g_st=ac'
+const LOCATIONS = [
+  {
+    key: 'lahore',
+    city: 'Lahore',
+    title: 'Lahore',
+    address:
+      'Plots 16 & 17, Sector A, Land Breeze Housing Society, Main Raiwind Road',
+    mapUrl: 'https://maps.app.goo.gl/h5iRDHNHD5uZD59P8?g_st=ac',
+    embedQuery:
+      'Plots 16 & 17, Sector A, Land Breeze Housing Society, Main Raiwind Road',
+  },
+  {
+    key: 'murree',
+    city: 'Murree',
+    title: 'Murree',
+    address: 'Beverly Hills Residences, Islamabad - Murree Expy, Murree',
+    mapUrl: 'https://maps.app.goo.gl/sYco3XkNqCPXwk8a7',
+    embedQuery: 'Beverly Hills Residences, Islamabad - Murree Expy, Murree',
+  },
+]
+
+const embedSrc = (query) =>
+  `https://www.google.com/maps?q=${encodeURIComponent(query)}&output=embed`
 
 const FIELD =
   'block w-full border border-neutral-300 bg-white px-4 py-3.5 text-sm text-black placeholder:text-neutral-400 outline-none transition duration-200 hover:border-neutral-500 focus:border-black'
@@ -54,18 +76,24 @@ const CONTACT_ITEMS = [
   },
 ]
 
-export default function Contact() {
-  const [form, setForm] = useState({
-    fullName: '',
-    phone: '',
-    email: '',
-    subject: 'Booking Inquiry',
-    message: '',
-  })
+const INITIAL_FORM = {
+  fullName: '',
+  phone: '',
+  email: '',
+  location: 'Not sure yet',
+  subject: 'Booking Inquiry',
+  message: '',
+}
 
+export default function Contact() {
+  const [form, setForm] = useState(INITIAL_FORM)
   const [errors, setErrors] = useState({})
   const [status, setStatus] = useState('idle')
   const [waUrl, setWaUrl] = useState('')
+  const [activeLocation, setActiveLocation] = useState(LOCATIONS[0].key)
+
+  const currentLocation =
+    LOCATIONS.find((l) => l.key === activeLocation) || LOCATIONS[0]
 
   const set = (key) => (event) => {
     setForm((current) => ({
@@ -121,6 +149,7 @@ export default function Contact() {
       `Name: ${form.fullName.trim()}`,
       `Mobile: ${form.phone.trim()}`,
       form.email.trim() ? `Email: ${form.email.trim()}` : null,
+      `Location: ${form.location}`,
       `Subject: ${form.subject}`,
       '',
       `Message: ${form.message.trim()}`,
@@ -151,7 +180,7 @@ export default function Contact() {
       <>
         <Seo
           title="Contact Us"
-          description="Get in touch with Glory Stays at Zameen Opal for bookings, availability and inquiries."
+          description="Get in touch with Glory Stays for bookings, availability and inquiries in Lahore and Murree."
           path="/contact"
         />
 
@@ -191,13 +220,7 @@ export default function Contact() {
               type="button"
               onClick={() => {
                 setStatus('idle')
-                setForm({
-                  fullName: '',
-                  phone: '',
-                  email: '',
-                  subject: 'Booking Inquiry',
-                  message: '',
-                })
+                setForm(INITIAL_FORM)
               }}
               className="mt-5 text-[11px] font-semibold uppercase tracking-[0.18em] text-neutral-500 transition hover:text-black"
             >
@@ -213,7 +236,7 @@ export default function Contact() {
     <>
       <Seo
         title="Contact Us"
-        description="Get in touch with Glory Stays at Zameen Opal for bookings, availability and inquiries."
+        description="Get in touch with Glory Stays for bookings, availability and inquiries in Lahore and Murree."
         path="/contact"
       />
 
@@ -284,32 +307,37 @@ export default function Contact() {
                 )}
               </div>
 
-              {/* ADDRESS */}
-              <a
-                href={MAP_URL}
-                target="_blank"
-                rel="noreferrer"
-                className="group mt-8 flex max-w-2xl gap-5 border border-neutral-300 p-5 transition duration-300 hover:border-black sm:p-6"
-              >
-                <span className="flex h-12 w-12 shrink-0 items-center justify-center border border-neutral-300 text-black transition duration-300 group-hover:border-black group-hover:bg-black group-hover:text-white">
-                  <MapPin size={20} strokeWidth={1.5} />
-                </span>
+              {/* LOCATIONS: one card per city */}
+              <div className="mt-8 grid max-w-2xl gap-4">
+                {LOCATIONS.map((loc) => (
+                  <a
+                    key={loc.key}
+                    href={loc.mapUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="group flex gap-4 border border-neutral-300 p-5 transition duration-300 hover:border-black sm:gap-5 sm:p-6"
+                  >
+                    <span className="flex h-12 w-12 shrink-0 items-center justify-center border border-neutral-300 text-black transition duration-300 group-hover:border-black group-hover:bg-black group-hover:text-white">
+                      <MapPin size={20} strokeWidth={1.5} />
+                    </span>
 
-                <div>
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-neutral-500">
-                    Visit us
-                  </p>
+                    <div className="min-w-0">
+                      <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-neutral-500">
+                        Visit us · {loc.city}
+                      </p>
 
-                  <p className="mt-2 max-w-md text-sm leading-6 text-black">
-                    {ADDRESS}
-                  </p>
+                      <p className="mt-2 max-w-md text-sm leading-6 text-black">
+                        {loc.address}
+                      </p>
 
-                  <span className="mt-4 inline-flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-neutral-500 transition group-hover:text-black">
-                    Open in Google Maps
-                    <ArrowUpRight size={14} />
-                  </span>
-                </div>
-              </a>
+                      <span className="mt-4 inline-flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-neutral-500 transition group-hover:text-black">
+                        Open in Google Maps
+                        <ArrowUpRight size={14} />
+                      </span>
+                    </div>
+                  </a>
+                ))}
+              </div>
             </div>
 
             {/* CONTACT FORM */}
@@ -402,6 +430,24 @@ export default function Contact() {
                   </div>
 
                   <div>
+                    <label htmlFor="contact-location" className={LABEL}>
+                      Location
+                    </label>
+
+                    <select
+                      id="contact-location"
+                      value={form.location}
+                      onChange={set('location')}
+                      className={`${FIELD} appearance-none`}
+                    >
+                      {LOCATIONS.map((loc) => (
+                        <option key={loc.key}>{loc.city}</option>
+                      ))}
+                      <option>Not sure yet</option>
+                    </select>
+                  </div>
+
+                  <div className="sm:col-span-2">
                     <label htmlFor="contact-subject" className={LABEL}>
                       Subject
                     </label>
@@ -466,13 +512,13 @@ export default function Contact() {
           </div>
         </section>
 
-        {/* MAP SECTION */}
+        {/* MAP SECTION: tabs switch between Lahore and Murree */}
         <section className="w-full border-t border-neutral-200 bg-neutral-50 py-14 sm:py-20">
           <div className="w-full px-5 sm:px-8 lg:px-12 xl:px-16">
             <div className="mb-8 flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
               <div>
                 <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-neutral-500">
-                  Our location
+                  Our locations
                 </p>
 
                 <h2
@@ -483,20 +529,48 @@ export default function Contact() {
               </div>
 
               <a
-                href={MAP_URL}
+                href={currentLocation.mapUrl}
                 target="_blank"
                 rel="noreferrer"
                 className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-black transition hover:text-neutral-500"
               >
-                Get directions
+                Get directions to {currentLocation.city}
                 <ArrowUpRight size={15} />
               </a>
             </div>
 
+            {/* Location tabs */}
+            <div
+              role="tablist"
+              aria-label="Choose a location"
+              className="mb-5 flex gap-2 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+            >
+              {LOCATIONS.map((loc) => {
+                const active = loc.key === activeLocation
+                return (
+                  <button
+                    key={loc.key}
+                    type="button"
+                    role="tab"
+                    aria-selected={active}
+                    onClick={() => setActiveLocation(loc.key)}
+                    className={`shrink-0 border px-5 py-2.5 text-[11px] font-semibold uppercase tracking-[0.18em] transition duration-300 ${
+                      active
+                        ? 'border-black bg-black text-white'
+                        : 'border-neutral-300 bg-white text-neutral-700 hover:border-black hover:text-black'
+                    }`}
+                  >
+                    {loc.city}
+                  </button>
+                )
+              })}
+            </div>
+
             <div className="w-full overflow-hidden border border-neutral-300 bg-white">
               <iframe
-                title="Glory Stays Location"
-                src="https://www.google.com/maps?q=Plots%2016%20%26%2017%2C%20Sector%20A%2C%20Land%20Breeze%20Housing%20Society%2C%20Main%20Raiwind%20Road&output=embed"
+                key={currentLocation.key}
+                title={`Glory Stays ${currentLocation.city} location`}
+                src={embedSrc(currentLocation.embedQuery)}
                 className="h-[360px] w-full border-0 sm:h-[480px] lg:h-[560px]"
                 loading="lazy"
                 referrerPolicy="no-referrer-when-downgrade"
@@ -509,7 +583,12 @@ export default function Contact() {
                 strokeWidth={1.5}
                 className="mt-1 shrink-0 text-black"
               />
-              <p>{ADDRESS}</p>
+              <p>
+                <span className="font-semibold text-black">
+                  {currentLocation.city}:
+                </span>{' '}
+                {currentLocation.address}
+              </p>
             </div>
           </div>
         </section>
