@@ -2,6 +2,8 @@ import { useState } from 'react'
 import {
   ArrowUpRight,
   Check,
+  ChevronDown,
+  Mail,
   MapPin,
   MessageCircle,
   Phone,
@@ -9,16 +11,24 @@ import {
 } from 'lucide-react'
 import Seo from '../components/Seo'
 import PageHeader from '../components/PageHeader'
+import {
+  DEFAULT_COUNTRY,
+  PHONE_COUNTRIES,
+  getCountry,
+  sanitizePhoneInput,
+  validatePhone,
+} from '../lib/phoneCountries'
 
 const FONT_SANS = "font-['Inter',ui-sans-serif,system-ui,sans-serif]"
 const FONT_HEADING =
   "font-['Playfair_Display',Georgia,'Times_New_Roman',serif]"
 
-/* ───────── WHATSAPP NUMBER ───────── */
+/* ───────── CONTACT DETAILS ───────── */
 
 // 0328 2626261 in international format (no + or spaces)
 const WHATSAPP_NUMBER = '923282626261'
 const PHONE_DISPLAY = '+92 328 2626261'
+const EMAIL = 'Hi@Glorystays.com'
 
 const buildWhatsappUrl = (message) =>
   `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`
@@ -57,27 +67,36 @@ const FIELD =
 const LABEL =
   'mb-2 block text-[11px] font-semibold uppercase tracking-[0.18em] text-neutral-600'
 
+/* Left side contact list: Mobile Number, UAN and Email */
 const CONTACT_ITEMS = [
   {
     icon: MessageCircle,
-    label: 'WhatsApp',
+    label: 'Mobile Number',
     value: PHONE_DISPLAY,
-    detail: 'Chat with our reservations team',
+    detail: 'Chat with our reservations team on WhatsApp',
     href: buildWhatsappUrl(
       'Hello Glory Stays, I would like to know more about your apartments.'
     ),
   },
   {
     icon: Phone,
-    label: 'Call Us',
+    label: 'UAN',
     value: PHONE_DISPLAY,
-    detail: 'Available for booking inquiries',
+    detail: 'Call us for booking inquiries',
     href: `tel:+${WHATSAPP_NUMBER}`,
+  },
+  {
+    icon: Mail,
+    label: 'Email',
+    value: EMAIL,
+    detail: 'Write to us anytime',
+    href: `mailto:${EMAIL}`,
   },
 ]
 
 const INITIAL_FORM = {
   fullName: '',
+  phoneCountry: DEFAULT_COUNTRY,
   phone: '',
   email: '',
   location: 'Not sure yet',
@@ -95,6 +114,8 @@ export default function Contact() {
   const currentLocation =
     LOCATIONS.find((l) => l.key === activeLocation) || LOCATIONS[0]
 
+  const phoneCountry = getCountry(form.phoneCountry)
+
   const set = (key) => (event) => {
     setForm((current) => ({
       ...current,
@@ -109,6 +130,48 @@ export default function Contact() {
     }
   }
 
+  /* ───────── PHONE HANDLERS ───────── */
+
+  // While typing: strip invalid characters; if an error is showing, re-check live
+  function onPhoneChange(event) {
+    const value = sanitizePhoneInput(event.target.value)
+    setForm((current) => ({ ...current, phone: value }))
+
+    if (errors.phone) {
+      const result = validatePhone(form.phoneCountry, value)
+      setErrors((current) => ({
+        ...current,
+        phone: result.ok ? '' : result.error,
+      }))
+    }
+  }
+
+  // When the customer leaves the field: show the error right away
+  function onPhoneBlur() {
+    if (!form.phone.trim()) return
+    const result = validatePhone(form.phoneCountry, form.phone)
+    setErrors((current) => ({
+      ...current,
+      phone: result.ok ? '' : result.error,
+    }))
+  }
+
+  // Changing the country re-checks the number that is already typed
+  function onPhoneCountryChange(event) {
+    const iso = event.target.value
+    setForm((current) => ({ ...current, phoneCountry: iso }))
+
+    if (form.phone.trim()) {
+      const result = validatePhone(iso, form.phone)
+      setErrors((current) => ({
+        ...current,
+        phone: result.ok ? '' : result.error,
+      }))
+    } else {
+      setErrors((current) => ({ ...current, phone: '' }))
+    }
+  }
+
   function validate() {
     const nextErrors = {}
 
@@ -116,8 +179,9 @@ export default function Contact() {
       nextErrors.fullName = 'Please enter your full name.'
     }
 
-    if (!/^\+?[0-9\s-]{9,16}$/.test(form.phone.trim())) {
-      nextErrors.phone = 'Please enter a valid mobile number.'
+    const phoneResult = validatePhone(form.phoneCountry, form.phone)
+    if (!phoneResult.ok) {
+      nextErrors.phone = phoneResult.error
     }
 
     if (
@@ -133,13 +197,14 @@ export default function Contact() {
 
     setErrors(nextErrors)
 
-    return Object.keys(nextErrors).length === 0
+    return { valid: Object.keys(nextErrors).length === 0, phoneResult }
   }
 
   function onSubmit(event) {
     event.preventDefault()
 
-    if (!validate()) return
+    const { valid, phoneResult } = validate()
+    if (!valid) return
 
     setStatus('sending')
 
@@ -147,7 +212,7 @@ export default function Contact() {
       'Hello Glory Stays, I would like to get in touch.',
       '',
       `Name: ${form.fullName.trim()}`,
-      `Mobile: ${form.phone.trim()}`,
+      `Mobile: ${phoneResult.display}`,
       form.email.trim() ? `Email: ${form.email.trim()}` : null,
       `Location: ${form.location}`,
       `Subject: ${form.subject}`,
@@ -174,6 +239,8 @@ export default function Contact() {
         ? 'border-red-600 focus:border-red-600'
         : ''
     }`
+
+  const phoneBorder = hasError('phone') ? 'border-red-600' : 'border-neutral-300'
 
   if (status === 'done') {
     return (
@@ -221,6 +288,7 @@ export default function Contact() {
               onClick={() => {
                 setStatus('idle')
                 setForm(INITIAL_FORM)
+                setErrors({})
               }}
               className="mt-5 text-[11px] font-semibold uppercase tracking-[0.18em] text-neutral-500 transition hover:text-black"
             >
@@ -288,7 +356,7 @@ export default function Contact() {
                           {label}
                         </p>
 
-                        <p className="mt-1 text-sm font-medium text-black sm:text-base">
+                        <p className="mt-1 break-words text-sm font-medium text-black sm:text-base">
                           {value}
                         </p>
 
@@ -376,30 +444,62 @@ export default function Contact() {
                     />
 
                     {errors.fullName && (
-                      <p className="mt-2 text-xs text-red-600">
+                      <p className="mt-2 text-xs text-red-600" role="alert">
                         {errors.fullName}
                       </p>
                     )}
                   </div>
 
+                  {/* Mobile number: country code selector + number input */}
                   <div>
                     <label htmlFor="contact-phone" className={LABEL}>
                       Mobile number
                     </label>
 
-                    <input
-                      id="contact-phone"
-                      type="tel"
-                      value={form.phone}
-                      onChange={set('phone')}
-                      autoComplete="tel"
-                      placeholder="+92 300 0000000"
-                      className={fieldClass('phone')}
-                      aria-invalid={hasError('phone')}
-                    />
+                    <div className="flex">
+                      {/* Compact label on top, full native country list underneath (invisible select) */}
+                      <div
+                        className={`relative flex shrink-0 items-center gap-1.5 border border-r-0 bg-neutral-50 px-3 text-sm text-black transition duration-200 focus-within:border-black ${phoneBorder}`}
+                      >
+                        <span className="whitespace-nowrap font-medium">
+                          {phoneCountry.iso} +{phoneCountry.dial}
+                        </span>
+                        <ChevronDown
+                          size={14}
+                          strokeWidth={1.6}
+                          className="text-neutral-500"
+                        />
+                        <select
+                          aria-label="Country code"
+                          value={form.phoneCountry}
+                          onChange={onPhoneCountryChange}
+                          className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+                        >
+                          {PHONE_COUNTRIES.map((c) => (
+                            <option key={c.iso} value={c.iso}>
+                              {c.name} (+{c.dial})
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <input
+                        id="contact-phone"
+                        type="tel"
+                        inputMode="tel"
+                        maxLength={20}
+                        value={form.phone}
+                        onChange={onPhoneChange}
+                        onBlur={onPhoneBlur}
+                        autoComplete="tel-national"
+                        placeholder={phoneCountry.example || 'Mobile number'}
+                        className={`${fieldClass('phone')} min-w-0 flex-1`}
+                        aria-invalid={hasError('phone')}
+                      />
+                    </div>
 
                     {errors.phone && (
-                      <p className="mt-2 text-xs text-red-600">
+                      <p className="mt-2 text-xs text-red-600" role="alert">
                         {errors.phone}
                       </p>
                     )}
@@ -423,7 +523,7 @@ export default function Contact() {
                     />
 
                     {errors.email && (
-                      <p className="mt-2 text-xs text-red-600">
+                      <p className="mt-2 text-xs text-red-600" role="alert">
                         {errors.email}
                       </p>
                     )}
@@ -481,7 +581,7 @@ export default function Contact() {
                     />
 
                     {errors.message && (
-                      <p className="mt-2 text-xs text-red-600">
+                      <p className="mt-2 text-xs text-red-600" role="alert">
                         {errors.message}
                       </p>
                     )}

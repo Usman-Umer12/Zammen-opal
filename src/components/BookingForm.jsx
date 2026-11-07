@@ -2,6 +2,13 @@ import { useMemo, useState } from 'react'
 import { ArrowUpRight, Check, ChevronDown } from 'lucide-react'
 import { supabase, isSupabaseConfigured } from '../lib/supabase'
 import { formatDateTime } from '../lib/utils'
+import {
+  DEFAULT_COUNTRY,
+  PHONE_COUNTRIES,
+  getCountry,
+  sanitizePhoneInput,
+  validatePhone,
+} from '../lib/phoneCountries'
 
 /* ───────── WHATSAPP NUMBER ───────── */
 
@@ -57,6 +64,7 @@ function nowLocalInput() {
 export default function BookingForm({ listing, className = '', embedded = false }) {
   const [form, setForm] = useState({
     fullName: '',
+    phoneCountry: DEFAULT_COUNTRY,
     phone: '',
     city: '',
     checkIn: '',
@@ -71,8 +79,40 @@ export default function BookingForm({ listing, className = '', embedded = false 
 
   // Apartment types available for the currently selected city
   const typeOptions = CITY_APARTMENTS[form.city] || []
+  const phoneCountry = getCountry(form.phoneCountry)
 
   const set = (key) => (e) => setForm((f) => ({ ...f, [key]: e.target.value }))
+
+  /* ───────── PHONE HANDLERS ───────── */
+
+  // While typing: strip invalid characters; if an error is showing, re-check live
+  function onPhoneChange(e) {
+    const value = sanitizePhoneInput(e.target.value)
+    setForm((f) => ({ ...f, phone: value }))
+    if (errors.phone) {
+      const result = validatePhone(form.phoneCountry, value)
+      setErrors((prev) => ({ ...prev, phone: result.ok ? undefined : result.error }))
+    }
+  }
+
+  // When the customer leaves the field: show the error right away
+  function onPhoneBlur() {
+    if (!form.phone.trim()) return
+    const result = validatePhone(form.phoneCountry, form.phone)
+    setErrors((prev) => ({ ...prev, phone: result.ok ? undefined : result.error }))
+  }
+
+  // Changing the country re-checks the number that is already typed
+  function onPhoneCountryChange(e) {
+    const iso = e.target.value
+    setForm((f) => ({ ...f, phoneCountry: iso }))
+    if (form.phone.trim()) {
+      const result = validatePhone(iso, form.phone)
+      setErrors((prev) => ({ ...prev, phone: result.ok ? undefined : result.error }))
+    } else {
+      setErrors((prev) => ({ ...prev, phone: undefined }))
+    }
+  }
 
   /* When the city changes, the apartment type is reset to something valid:
      1. keep the current type if the new city offers it,
@@ -96,29 +136,40 @@ export default function BookingForm({ listing, className = '', embedded = false 
   function validate() {
     const e = {}
     if (form.fullName.trim().length < 2) e.fullName = 'Please enter your full name.'
-    if (!/^\+?[0-9\s-]{9,16}$/.test(form.phone.trim())) e.phone = 'Enter a valid mobile number.'
+
+    const phoneResult = validatePhone(form.phoneCountry, form.phone)
+    if (!phoneResult.ok) e.phone = phoneResult.error
+
     if (!CITY_OPTIONS.includes(form.city)) e.city = 'Please select a city.'
     if (!typeOptions.includes(form.apartmentType))
       e.apartmentType = 'Please select an apartment type.'
+
     if (!form.checkIn) e.checkIn = 'Choose a check-in date and time.'
+    else if (new Date(form.checkIn) < new Date(minDate))
+      e.checkIn = 'Check-in cannot be in the past.'
+
     if (!form.checkOut) e.checkOut = 'Choose a check-out date and time.'
     if (form.checkIn && form.checkOut && new Date(form.checkOut) <= new Date(form.checkIn))
       e.checkOut = 'Check-out must be after check-in.'
+
     if (Number(form.guests) < 1) e.guests = 'At least 1 guest.'
+    else if (Number(form.guests) > 20) e.guests = 'Maximum 20 guests.'
+
     setErrors(e)
-    return Object.keys(e).length === 0
+    return { valid: Object.keys(e).length === 0, phoneResult }
   }
 
   async function onSubmit(ev) {
     ev.preventDefault()
-    if (!validate()) return
+    const { valid, phoneResult } = validate()
+    if (!valid) return
     setStatus('sending')
 
     const message = [
       'Hello, I would like to make a booking inquiry.',
       '',
       `Name: ${form.fullName.trim()}`,
-      `Mobile: ${form.phone.trim()}`,
+      `Mobile: ${phoneResult.display}`,
       `City: ${form.city}`,
       listing ? `Apartment: ${listing.title}` : null,
       `Apartment type: ${form.apartmentType}`,
@@ -133,7 +184,7 @@ export default function BookingForm({ listing, className = '', embedded = false 
     if (isSupabaseConfigured) {
       const { error } = await supabase.from('inquiries').insert({
         full_name: form.fullName.trim(),
-        phone: form.phone.trim(),
+        phone: phoneResult.e164, // clean international format, e.g. +923001234567
         check_in: new Date(form.checkIn).toISOString(),
         check_out: new Date(form.checkOut).toISOString(),
         guests: Number(form.guests),
@@ -213,6 +264,8 @@ export default function BookingForm({ listing, className = '', embedded = false 
       ? `Only ${typeOptions[0]} is available in ${form.city}.`
       : null
 
+  const phoneBorder = hasErr('phone') ? 'border-red-600' : 'border-neutral-300'
+
   return (
     <form
       onSubmit={onSubmit}
@@ -245,20 +298,48 @@ export default function BookingForm({ listing, className = '', embedded = false 
           {err('fullName')}
         </div>
 
+        {/* Mobile number: country code selector + number input */}
         <div className={wide}>
           <label htmlFor="bf-phone" className={LABEL}>
             Mobile number
           </label>
-          <input
-            id="bf-phone"
-            type="tel"
-            className={fieldClass('phone')}
-            placeholder="+92 300 0000000"
-            value={form.phone}
-            onChange={set('phone')}
-            autoComplete="tel"
-            aria-invalid={hasErr('phone')}
-          />
+          <div className="flex">
+            {/* Compact label on top, full native country list underneath (invisible select) */}
+            <div
+              className={`relative flex shrink-0 items-center gap-1.5 border border-r-0 bg-neutral-50 px-3 text-sm text-black transition duration-200 focus-within:border-black ${phoneBorder}`}
+            >
+              <span className="whitespace-nowrap font-medium">
+                {phoneCountry.iso} +{phoneCountry.dial}
+              </span>
+              <ChevronDown size={14} strokeWidth={1.6} className="text-neutral-500" />
+              <select
+                aria-label="Country code"
+                value={form.phoneCountry}
+                onChange={onPhoneCountryChange}
+                className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+              >
+                {PHONE_COUNTRIES.map((c) => (
+                  <option key={c.iso} value={c.iso}>
+                    {c.name} (+{c.dial})
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <input
+              id="bf-phone"
+              type="tel"
+              inputMode="tel"
+              maxLength={20}
+              className={`${fieldClass('phone')} min-w-0 flex-1`}
+              placeholder={phoneCountry.example || 'Mobile number'}
+              value={form.phone}
+              onChange={onPhoneChange}
+              onBlur={onPhoneBlur}
+              autoComplete="tel-national"
+              aria-invalid={hasErr('phone')}
+            />
+          </div>
           {err('phone')}
         </div>
 
@@ -383,8 +464,6 @@ export default function BookingForm({ listing, className = '', embedded = false 
       >
         {status === 'sending' ? 'Sending…' : 'Book Now'}
       </button>
-
-    
     </form>
   )
 }
