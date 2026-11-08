@@ -1,3 +1,4 @@
+
 import { lazy, Suspense, useEffect } from 'react'
 import { Outlet, Route, Routes, useLocation } from 'react-router-dom'
 
@@ -11,6 +12,7 @@ import StayDetail from './pages/StayDetail'
 import Locations from './pages/Locations'
 import LocationDetail from './pages/LocationDetail'
 import About from './pages/About'
+import InvestorRelations from './pages/InvestorRelations'
 import Contact from './pages/Contact'
 import Book from './pages/Book'
 import NotFound from './pages/NotFound'
@@ -22,6 +24,8 @@ const Dashboard = lazy(() => import('./pages/admin/Dashboard'))
 const ListingsAdmin = lazy(() => import('./pages/admin/ListingsAdmin'))
 const ListingForm = lazy(() => import('./pages/admin/ListingForm'))
 const SettingsAdmin = lazy(() => import('./pages/admin/SettingsAdmin'))
+const HeroAdmin = lazy(() => import('./pages/admin/HeroAdmin'))
+const InvestorAdmin = lazy(() => import('./pages/admin/InvestorAdmin'))
 
 function ScrollToTop() {
   const { pathname } = useLocation()
@@ -91,13 +95,16 @@ export default function App() {
             <Route path="stays" element={<Stays />} />
             <Route path="stays/:slug" element={<StayDetail />} />
 
-            {/* All locations, then one page per city (Lahore, Islamabad, Murree) */}
+            {/* All locations, then one page per city */}
             <Route path="locations" element={<Locations />} />
             <Route path="locations/:slug" element={<LocationDetail />} />
 
             <Route path="about" element={<About />} />
+            <Route path="investor-relations" element={<InvestorRelations />} />
             <Route path="contact" element={<Contact />} />
-            <Route path="book" element={<Book />} />
+
+            {/* Booking Page */}
+            <Route path="booking" element={<Book />} />
 
             <Route path="*" element={<NotFoundPage />} />
           </Route>
@@ -135,6 +142,18 @@ export default function App() {
             <Route
               path="listings/:id"
               element={<ListingForm />}
+            />
+
+            {/* Home page hero slider */}
+            <Route
+              path="hero"
+              element={<HeroAdmin />}
+            />
+
+            {/* Investor page content + client inquiries */}
+            <Route
+              path="investors"
+              element={<InvestorAdmin />}
             />
 
             {/* Locations & Apartment Types */}

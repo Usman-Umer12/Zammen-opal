@@ -1,7 +1,8 @@
 @import "tailwindcss";
 
 @theme {
-  --font-display: "Cormorant Garamond", Georgia, serif;
+  --font-display: "Jost", system-ui, sans-serif;
+  --font-serif: "Cormorant Garamond", Georgia, serif;
   --font-sans: "Jost", system-ui, sans-serif;
 
   --color-pine-50: #f2f6f5;
@@ -96,7 +97,7 @@
   h1,
   h2,
   h3 {
-    @apply font-display font-medium tracking-tight text-pine-950;
+    @apply font-display font-light tracking-tight text-pine-950;
   }
 }
 

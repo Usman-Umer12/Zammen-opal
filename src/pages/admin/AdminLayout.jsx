@@ -1,14 +1,15 @@
-
 import { NavLink, Outlet, Navigate, Link, useLocation } from 'react-router-dom'
 import {
   Building2,
   ExternalLink,
+  Images,
   LogOut,
   Settings,
   LayoutDashboard,
   Menu,
   X,
   ArrowUpRight,
+  Users,
 } from 'lucide-react'
 import { useState } from 'react'
 
@@ -27,6 +28,16 @@ const links = [
     to: '/admin/apartments',
     label: 'Apartments',
     icon: Building2,
+  },
+  {
+    to: '/admin/hero',
+    label: 'Hero Slider',
+    icon: Images,
+  },
+  {
+    to: '/admin/investors',
+    label: 'Investor Page',
+    icon: Users,
   },
   {
     to: '/admin/settings',

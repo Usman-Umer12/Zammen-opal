@@ -30,9 +30,9 @@ export default function Book() {
   return (
     <div className={`${FONT_SANS} bg-white`}>
       <Seo
-        title="Book Your Stay"
+        title="Booking Your Stay"
         description="Send a booking inquiry for a furnished apartment in Lahore, Murree or Islamabad. We confirm availability and rates on WhatsApp."
-        path="/book"
+        path="/booking"
       />
 
       <PageHeader eyebrow="Booking" title="Book your stay">

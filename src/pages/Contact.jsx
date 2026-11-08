@@ -20,8 +20,7 @@ import {
 } from '../lib/phoneCountries'
 
 const FONT_SANS = "font-['Inter',ui-sans-serif,system-ui,sans-serif]"
-const FONT_HEADING =
-  "font-['Playfair_Display',Georgia,'Times_New_Roman',serif]"
+const FONT_HEADING = "font-['Jost',ui-sans-serif,system-ui,sans-serif]"
 
 /* ───────── CONTACT DETAILS ───────── */
 
@@ -62,7 +61,7 @@ const embedSrc = (query) =>
   `https://www.google.com/maps?q=${encodeURIComponent(query)}&output=embed`
 
 const FIELD =
-  'block w-full border border-neutral-300 bg-white px-4 py-3.5 text-sm text-black placeholder:text-neutral-400 outline-none transition duration-200 hover:border-neutral-500 focus:border-black'
+  'block w-full border border-neutral-300 bg-white px-4 py-3.5 text-sm font-light text-black placeholder:text-neutral-400 outline-none transition duration-200 hover:border-neutral-500 focus:border-black'
 
 const LABEL =
   'mb-2 block text-[11px] font-semibold uppercase tracking-[0.18em] text-neutral-600'
@@ -256,19 +255,21 @@ export default function Contact() {
           to assist you.
         </PageHeader>
 
-        <section className={`${FONT_SANS} w-full px-5 py-16 sm:px-8 sm:py-20 lg:px-12`}>
-          <div className="mx-auto max-w-xl border border-neutral-300 bg-white p-8 text-center sm:p-12">
+        <section className={`${FONT_SANS} w-full px-5 py-14 sm:px-8 sm:py-16 lg:px-12`}>
+          <div className="mx-auto max-w-xl border border-neutral-300 bg-white p-8 text-center sm:p-10">
             <span className="mx-auto flex h-14 w-14 items-center justify-center bg-black text-white">
               <Check size={26} strokeWidth={1.6} />
             </span>
 
-            <h2 className={`${FONT_HEADING} mt-7 text-3xl font-medium text-black`}>
+            <h2
+              className={`${FONT_HEADING} mt-6 text-2xl font-light tracking-[-0.01em] text-black sm:text-3xl`}
+            >
               Your message is ready
             </h2>
 
             <span className="mx-auto mt-5 block h-px w-10 bg-black" />
 
-            <p className="mx-auto mt-5 max-w-md text-sm leading-7 text-neutral-600">
+            <p className="mx-auto mt-5 max-w-md text-sm font-light leading-7 text-neutral-600">
               Your inquiry has been prepared for WhatsApp. Our team will get
               back to you as soon as possible.
             </p>
@@ -315,29 +316,29 @@ export default function Contact() {
 
       <main className={`${FONT_SANS} w-full overflow-hidden`}>
         {/* CONTACT SECTION */}
-        <section className="w-full px-5 py-14 sm:px-8 sm:py-20 lg:px-12 xl:px-16">
+        <section className="w-full px-5 py-12 sm:px-8 sm:py-16 lg:px-12 xl:px-16">
           <div className="grid w-full gap-10 lg:grid-cols-[0.85fr_1.15fr] lg:gap-16 xl:gap-24">
             {/* CONTACT INFORMATION */}
-            <div className="py-2 lg:py-6">
+            <div className="py-2 lg:py-4">
               <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-neutral-500">
                 Get in touch
               </p>
 
               <h2
-                className={`${FONT_HEADING} mt-4 max-w-xl text-4xl font-medium leading-tight text-black sm:text-5xl lg:text-6xl`}
+                className={`${FONT_HEADING} mt-4 max-w-xl text-3xl font-light leading-tight tracking-[-0.01em] text-black sm:text-4xl lg:text-5xl`}
               >
                 We are here to make your stay simple.
               </h2>
 
-              <span className="mt-7 block h-px w-12 bg-black" />
+              <span className="mt-6 block h-px w-12 bg-black" />
 
-              <p className="mt-7 max-w-xl text-sm leading-7 text-neutral-600 sm:text-base sm:leading-8">
+              <p className="mt-6 max-w-xl text-sm font-light leading-7 text-neutral-600 sm:text-base sm:leading-8">
                 Contact Glory Stays for booking inquiries, availability and
                 general information. Choose the way that works best for you,
                 and our team will be happy to assist.
               </p>
 
-              <div className="mt-10 max-w-2xl divide-y divide-neutral-200 border-y border-neutral-200">
+              <div className="mt-8 max-w-2xl divide-y divide-neutral-200 border-y border-neutral-200">
                 {CONTACT_ITEMS.map(
                   ({ icon: Icon, label, value, detail, href }) => (
                     <a
@@ -345,7 +346,7 @@ export default function Contact() {
                       href={href}
                       target={href.startsWith('http') ? '_blank' : undefined}
                       rel={href.startsWith('http') ? 'noreferrer' : undefined}
-                      className="group flex items-center gap-4 py-6 transition sm:gap-5"
+                      className="group flex items-center gap-4 py-5 transition sm:gap-5"
                     >
                       <span className="flex h-12 w-12 shrink-0 items-center justify-center border border-neutral-300 text-black transition duration-300 group-hover:border-black group-hover:bg-black group-hover:text-white">
                         <Icon size={20} strokeWidth={1.5} />
@@ -356,11 +357,11 @@ export default function Contact() {
                           {label}
                         </p>
 
-                        <p className="mt-1 break-words text-sm font-medium text-black sm:text-base">
+                        <p className="mt-1 break-words text-sm font-normal text-black sm:text-base">
                           {value}
                         </p>
 
-                        <p className="mt-1 text-xs text-neutral-500">
+                        <p className="mt-1 text-xs font-light text-neutral-500">
                           {detail}
                         </p>
                       </div>
@@ -376,7 +377,7 @@ export default function Contact() {
               </div>
 
               {/* LOCATIONS: one card per city */}
-              <div className="mt-8 grid max-w-2xl gap-4">
+              <div className="mt-6 grid max-w-2xl gap-4">
                 {LOCATIONS.map((loc) => (
                   <a
                     key={loc.key}
@@ -394,7 +395,7 @@ export default function Contact() {
                         Visit us · {loc.city}
                       </p>
 
-                      <p className="mt-2 max-w-md text-sm leading-6 text-black">
+                      <p className="mt-2 max-w-md text-sm font-light leading-6 text-black">
                         {loc.address}
                       </p>
 
@@ -409,23 +410,23 @@ export default function Contact() {
             </div>
 
             {/* CONTACT FORM */}
-            <div className="border border-neutral-300 bg-white p-6 sm:p-8 lg:p-10 xl:p-12">
+            <div className="border border-neutral-300 bg-white p-6 sm:p-8 lg:p-10">
               <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-neutral-500">
                 Send an inquiry
               </p>
 
               <h2
-                className={`${FONT_HEADING} mt-4 text-3xl font-medium text-black sm:text-4xl lg:text-5xl`}
+                className={`${FONT_HEADING} mt-4 text-2xl font-light tracking-[-0.01em] text-black sm:text-3xl lg:text-4xl`}
               >
                 How can we help?
               </h2>
 
-              <p className="mt-5 max-w-xl text-sm leading-7 text-neutral-600 sm:text-base">
+              <p className="mt-4 max-w-xl text-sm font-light leading-7 text-neutral-600 sm:text-base">
                 Fill out the form below and your complete inquiry will be sent
                 directly to our team on WhatsApp.
               </p>
 
-              <form onSubmit={onSubmit} noValidate className="mt-9">
+              <form onSubmit={onSubmit} noValidate className="mt-8">
                 <div className="grid gap-5 sm:grid-cols-2">
                   <div>
                     <label htmlFor="contact-name" className={LABEL}>
@@ -572,7 +573,7 @@ export default function Contact() {
 
                     <textarea
                       id="contact-message"
-                      rows={7}
+                      rows={6}
                       value={form.message}
                       onChange={set('message')}
                       placeholder="Tell us how we can help you..."
@@ -603,7 +604,7 @@ export default function Contact() {
                   )}
                 </button>
 
-                <p className="mt-4 text-center text-xs leading-5 text-neutral-500">
+                <p className="mt-4 text-center text-xs font-light leading-5 text-neutral-500">
                   Your inquiry will open directly in WhatsApp with all of your
                   submitted details.
                 </p>
@@ -613,7 +614,7 @@ export default function Contact() {
         </section>
 
         {/* MAP SECTION: tabs switch between Lahore and Murree */}
-        <section className="w-full border-t border-neutral-200 bg-neutral-50 py-14 sm:py-20">
+        <section className="w-full border-t border-neutral-200 bg-neutral-50 py-12 sm:py-16">
           <div className="w-full px-5 sm:px-8 lg:px-12 xl:px-16">
             <div className="mb-8 flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
               <div>
@@ -622,7 +623,7 @@ export default function Contact() {
                 </p>
 
                 <h2
-                  className={`${FONT_HEADING} mt-3 text-3xl font-medium text-black sm:text-4xl`}
+                  className={`${FONT_HEADING} mt-3 text-2xl font-light tracking-[-0.01em] text-black sm:text-3xl`}
                 >
                   Find Glory Stays
                 </h2>
@@ -671,13 +672,13 @@ export default function Contact() {
                 key={currentLocation.key}
                 title={`Glory Stays ${currentLocation.city} location`}
                 src={embedSrc(currentLocation.embedQuery)}
-                className="h-[360px] w-full border-0 sm:h-[480px] lg:h-[560px]"
+                className="h-[340px] w-full border-0 sm:h-[440px] lg:h-[520px]"
                 loading="lazy"
                 referrerPolicy="no-referrer-when-downgrade"
               />
             </div>
 
-            <div className="mt-5 flex items-start gap-3 text-sm leading-6 text-neutral-600">
+            <div className="mt-5 flex items-start gap-3 text-sm font-light leading-6 text-neutral-600">
               <MapPin
                 size={18}
                 strokeWidth={1.5}
